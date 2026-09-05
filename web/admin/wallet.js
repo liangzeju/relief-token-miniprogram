@@ -114,7 +114,20 @@
       provider.on?.("accountsChanged", addresses => { accountVersion++; account = addresses[0] || null; $("waAccount").textContent = short(account); controls(); });
       provider.on?.("chainChanged", () => { accountVersion++; message("钱包网络已变化，下一次操作将重新核验测试网。"); });
     }
-    const addresses = await provider.request({ method: "eth_requestAccounts" });
+    // Read existing permission first. Calling eth_requestAccounts repeatedly while
+    // MetaMask has an unresolved permission prompt produces wallet_requestPermissions
+    // already-pending errors and can strand the page in an apparent disconnected state.
+    let addresses = await provider.request({ method: "eth_accounts" });
+    if (!addresses.length) {
+      try {
+        addresses = await provider.request({ method: "eth_requestAccounts" });
+      } catch (error) {
+        if (String(error?.message || "").toLowerCase().includes("already pending")) {
+          throw new Error("MetaMask 仍有一个待处理的连接请求。请打开 MetaMask 处理或关闭该请求后，再刷新页面重试。");
+        }
+        throw error;
+      }
+    }
     account = addresses[0]; if (!account) throw new Error("钱包未授权账户");
     $("waAccount").textContent = short(account); controls();
     return account;
