@@ -49,8 +49,10 @@
   }
   function controls() {
     $("waDeploy").disabled = !token || !account || !!data?.contractAddress || sending || data?.newOperationsEnabled === false;
-    $("waSaveTask").disabled = !token || !account || !data?.ready || sending || data?.newOperationsEnabled === false;
-    $("waReleaseSubmit").disabled = !token || !account || !data?.ready || sending || data?.newOperationsEnabled === false;
+    // signPrepared() can establish the wallet connection itself. Do not make the
+    // form impossible to click merely because MetaMask has not exposed accounts yet.
+    $("waSaveTask").disabled = !token || !data?.ready || sending || data?.newOperationsEnabled === false;
+    $("waReleaseSubmit").disabled = !token || !data?.ready || sending || data?.newOperationsEnabled === false;
     $("waDeploy").title = data?.operationBlockReason || "部署测试网合约";
     $("waConnect").disabled = sending;
     $("waLogout").hidden = !token;
