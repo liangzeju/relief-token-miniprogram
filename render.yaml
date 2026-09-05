@@ -2,7 +2,7 @@ services:
   - type: web
     name: relief-monad-mvp
     runtime: node
-    plan: starter
+    plan: free
     rootDir: .
     buildCommand: corepack enable && pnpm --dir backend install --prod --frozen-lockfile --ignore-scripts
     startCommand: node backend/server.js
@@ -23,9 +23,3 @@ services:
         value: "2"
       - key: RELIEF_ADMIN_TOKEN
         generateValue: true
-      - key: DATA_DIR
-        value: /var/data/relief-mon
-    disk:
-      name: relief-mon-data
-      mountPath: /var/data
-      sizeGB: 1
