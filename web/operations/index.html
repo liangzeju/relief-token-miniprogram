@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>岗位工作台 | Relief MON</title>
+  <link rel="stylesheet" href="/operations/style.css">
+  <script defer src="/shared/vendor/lucide.min.js"></script>
+  <script defer src="/shared/vendor/ethers.umd.min.js"></script>
+  <script defer src="/operations/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/mobile/">Relief MON</a>
+    <div><strong>岗位工作台</strong><span id="identity">正在验证身份</span></div>
+    <a href="/mobile/#account" class="account-link">账户与岗位</a>
+    <a href="/admin/#operators-admin">管理端</a>
+    <button id="refresh" class="icon-button" type="button" title="刷新业务记录" aria-label="刷新业务记录"><i data-lucide="refresh-cw"></i></button>
+  </header>
+  <main>
+    <div id="notice" class="notice" role="status">正在连接业务服务</div>
+    <p class="notice">测试网预备环境 · 当前目录与任务为演练资料 · 锁款与付款以链上确认记录为准</p>
+    <section id="gate" hidden><h1>岗位访问</h1><p id="gateText"></p><a href="/mobile/#account">登录或领取岗位</a><a href="/admin/#wallet-admin">管理员验证</a></section>
+    <div id="workspace" hidden>
+      <section class="summary" aria-label="采购概况"><div><small>有效报价</small><strong id="quoteCount">0</strong></div><div><small>采购预留</small><strong id="reservationCount">0</strong></div><div><small>合同记录</small><strong id="contractCount">0</strong></div><div><small>数据版本</small><strong id="version">0</strong></div></section>
+      <nav class="tabs" aria-label="采购业务"><a href="#quotes">报价目录</a><a href="#reservations">采购预留</a><a href="#contracts">合同台账</a><a href="#fulfillment" id="fulfillmentTab">履约批次</a></nav>
+      <section id="view-quotes" class="view" hidden>
+        <div class="section-head"><h1>报价目录</h1><span>MON</span></div>
+        <form id="quoteForm" class="command-form" hidden>
+          <h2>提交供方报价</h2><div class="fields">
+            <label>物资或服务<select name="resourceId" required></select></label>
+            <label>单价 MON<input name="unitPriceMon" required inputmode="decimal" maxlength="78" placeholder="0.00"></label>
+            <label>可供数量<input name="availableQuantity" type="number" min="1" step="1" required></label>
+            <label>预计送达小时<input name="etaHours" type="number" min="0" step="1" required></label>
+            <label>报价有效期<input name="validUntil" type="datetime-local" required></label>
+          </div><div class="form-footer"><button type="submit"><i data-lucide="plus"></i>提交报价</button><span class="form-result" role="status"></span></div>
+        </form>
+        <div id="quoteList" class="quote-list"></div>
+      </section>
+      <section id="view-reservations" class="view" hidden>
+        <h1>采购预留</h1>
+        <form id="reservationForm" class="command-form" hidden>
+          <h2>预留供方库存</h2><div class="fields">
+            <label>有效报价<select name="quoteId" required></select></label>
+            <label>救援任务<select name="taskId" required></select></label>
+            <label>采购数量<input name="quantity" type="number" min="1" step="1" required></label>
+            <label>合同审批人<select name="buyerWallet" required></select></label>
+          </div><div class="form-footer"><button type="submit"><i data-lucide="package-check"></i>提交预留</button><span class="form-result" role="status"></span></div>
+        </form>
+        <div class="table-wrap"><table><thead><tr><th>预留编号 / 任务</th><th>物资</th><th>数量</th><th>合同审批钱包</th><th>状态</th></tr></thead><tbody id="reservationRows"></tbody></table></div>
+      </section>
+      <section id="view-contracts" class="view" hidden>
+        <h1>合同台账</h1>
+        <form id="contractForm" class="command-form" hidden>
+          <h2>创建合同草案</h2><div class="fields">
+            <label>采购预留<select name="reservationId" required></select></label>
+            <label>签署截止时间<input name="expiresAt" type="datetime-local" required></label>
+          </div><label>合同条款<textarea name="termsText" rows="5" minlength="2" maxlength="16000" required></textarea></label>
+          <label>验收标准<textarea name="acceptanceText" rows="4" minlength="2" maxlength="16000" required></textarea></label>
+          <div class="form-footer"><button type="submit"><i data-lucide="file-plus-2"></i>创建草案</button><span class="form-result" role="status"></span></div>
+        </form>
+        <div class="table-wrap"><table><thead><tr><th>合同 / 任务</th><th>采购内容</th><th>合同金额 MON</th><th>双方签名</th><th>状态</th><th></th></tr></thead><tbody id="contractRows"></tbody></table></div>
+      </section>
+      <section id="view-fulfillment" class="view" hidden>
+        <div class="section-head"><h1 id="fulfillmentTitle">履约批次</h1><span id="batchCount"></span></div>
+        <form id="deliveryForm" class="command-form" hidden>
+          <h2>登记交付</h2><div class="fields">
+            <label>已锁款合同<select name="contractId" required></select></label>
+            <label>交付数量<input name="quantity" type="number" min="1" step="1" required></label>
+          </div>
+          <label>交付说明<textarea name="statement" rows="4" minlength="2" maxlength="16000" required></textarea></label>
+          <label for="deliveryFiles">原始附件（1 至 6 件，每件不超过 5 MiB）<input id="deliveryFiles" type="file" multiple accept=".png,.jpg,.jpeg,.pdf" required aria-describedby="deliveryFileNotice"></label>
+          <p id="deliveryFileNotice" class="notice">PNG、JPEG 或 PDF。文件头类型初检不代表病毒扫描或真实性核验。</p>
+          <ul id="deliveryFileList" class="evidence-list" aria-live="polite"></ul>
+          <div class="form-footer"><button type="submit"><i data-lucide="package-plus"></i>登记交付</button><span class="form-result" role="status"></span></div>
+        </form>
+        <p id="deliveryAvailability" class="notice"></p>
+        <div class="table-wrap"><table class="batch-table"><thead><tr><th>批次 / 合同版本</th><th>交付数量</th><th>验收</th><th>应付</th><th>链上付款</th><th></th></tr></thead><tbody id="batchRows"></tbody></table></div>
+      </section>
+      <section id="view-batch" class="view" hidden>
+        <a href="#fulfillment" class="back-link">返回履约批次</a>
+        <div id="batchDetail"></div>
+        <section id="reviewAssignmentHistory" aria-label="复核分派历史"></section>
+        <form id="reviewAssignmentForm" class="command-form" hidden>
+          <h2>分派独立复核</h2>
+          <p class="notice">管理员仅分派与审阅，不代为复核或付款。</p>
+          <label>复核人<select name="assignmentId" required></select></label>
+          <label>分派或改派原因<textarea name="reason" rows="3" minlength="2" maxlength="2000" required></textarea></label>
+          <p id="reviewAssignmentAvailability" class="notice"></p>
+          <div class="form-footer"><button type="submit"><i data-lucide="user-round-check"></i>确认分派</button><span class="form-result" role="status"></span></div>
+        </form>
+        <div id="batchAttestations" aria-live="polite"></div>
+        <p id="evidenceDownloadStatus" class="notice" role="status"></p>
+        <form id="acceptanceForm" class="command-form" hidden>
+          <h2>登记验收</h2><div class="fields">
+            <label>验收结论<select name="outcome" required><option value="ACCEPTED">通过</option><option value="PARTIAL">部分通过</option><option value="REJECTED">拒收</option><option value="DISPUTED">争议</option></select></label>
+            <label>验收数量<input name="acceptedQuantity" type="number" min="0" step="1" required></label>
+          </div>
+          <label>验收说明<textarea name="statement" rows="4" minlength="2" maxlength="16000" required></textarea></label>
+          <label for="acceptanceFiles">原始附件（1 至 6 件，每件不超过 5 MiB）<input id="acceptanceFiles" type="file" multiple accept=".png,.jpg,.jpeg,.pdf" required aria-describedby="acceptanceFileNotice"></label>
+          <p id="acceptanceFileNotice" class="notice">PNG、JPEG 或 PDF。文件头类型初检不代表病毒扫描或真实性核验。</p>
+          <ul id="acceptanceFileList" class="evidence-list" aria-live="polite"></ul>
+          <div class="form-footer"><button type="submit"><i data-lucide="clipboard-check"></i>登记验收</button><span class="form-result" role="status"></span></div>
+        </form>
+        <form id="reviewForm" class="command-form" hidden>
+          <h2>独立复核结论</h2>
+          <p id="reviewAssignmentCurrent" class="notice"></p>
+          <label>复核通过数量<input name="acceptedQuantity" type="number" min="0" step="1" required></label>
+          <label>复核说明<textarea name="statement" rows="4" minlength="2" maxlength="16000" required></textarea></label>
+          <label for="reviewFiles">原始附件（1 至 6 件，每件不超过 5 MiB）<input id="reviewFiles" type="file" multiple accept=".png,.jpg,.jpeg,.pdf" required aria-describedby="reviewFileNotice"></label>
+          <p id="reviewFileNotice" class="notice">PNG、JPEG 或 PDF。文件头类型初检不代表病毒扫描或真实性核验。</p>
+          <ul id="reviewFileList" class="evidence-list" aria-live="polite"></ul>
+          <div class="form-footer"><button type="submit"><i data-lucide="clipboard-check"></i>提交复核结论</button><span class="form-result" role="status"></span></div>
+        </form>
+        <form id="payableForm" class="command-form" hidden>
+          <h2>创建应付</h2><p id="payableAmount"></p>
+          <div class="form-footer"><button type="submit"><i data-lucide="file-check-2"></i>创建应付（不付款）</button><span class="form-result" role="status"></span></div>
+        </form>
+        <p id="batchActionStatus" class="notice" role="status"></p>
+      </section>
+      <section id="view-contract" class="view" hidden>
+        <a href="#contracts" class="back-link">返回合同台账</a>
+        <div id="contractDetail"></div>
+        <form id="signatureForm" class="command-form" hidden>
+          <h2>合同签署</h2><p id="signingStatus" role="status"></p>
+          <label>签名钱包<select id="walletProvider"></select></label>
+          <label class="check-label"><input type="checkbox" name="reviewed" required>已核对本版本合同条款、验收标准、双方钱包及金额</label>
+          <div class="form-footer"><button type="submit"><i data-lucide="signature"></i>连接钱包并签署</button><span class="form-result" role="status"></span></div>
+        </form>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

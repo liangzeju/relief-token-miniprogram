@@ -1,0 +1,1216 @@
+{
+  "contractName": "ReliefPool",
+  "sourceName": "contracts/ReliefPool.sol",
+  "compiler": {
+    "version": "0.8.30+commit.73712a01.Emscripten.clang",
+    "evmVersion": "paris",
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    }
+  },
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "initialOwner",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [],
+      "name": "DirectPaymentUnsupported",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "DuplicateDonation",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidAmount",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidId",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidPurpose",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidRecipient",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidUrgency",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "NotDonor",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "owner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableInvalidOwner",
+      "type": "error"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "account",
+          "type": "address"
+        }
+      ],
+      "name": "OwnableUnauthorizedAccount",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "RecipientLocked",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "ReentrancyGuardReentrantCall",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TargetBelowAllocated",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TaskLimitReached",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "TransferFailed",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UnknownDonation",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "UnknownTask",
+      "type": "error"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "donationId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "taskId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amountWei",
+          "type": "uint256"
+        }
+      ],
+      "name": "DonationAllocated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "donationId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "donor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint8",
+          "name": "purpose",
+          "type": "uint8"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amountWei",
+          "type": "uint256"
+        }
+      ],
+      "name": "DonationReceived",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "donationId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "donor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amountWei",
+          "type": "uint256"
+        }
+      ],
+      "name": "DonationRefunded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "donationId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amountWei",
+          "type": "uint256"
+        }
+      ],
+      "name": "DonationUnallocated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "bytes32",
+          "name": "taskId",
+          "type": "bytes32"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amountWei",
+          "type": "uint256"
+        }
+      ],
+      "name": "TaskReleased",
+      "type": "event"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "fallback"
+    },
+    {
+      "inputs": [],
+      "name": "MAX_TASKS",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "donationId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "allocateRemaining",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "taskId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint8",
+          "name": "purpose",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint8",
+          "name": "urgency",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "targetWei",
+          "type": "uint256"
+        },
+        {
+          "internalType": "address",
+          "name": "recipient",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "active",
+          "type": "bool"
+        }
+      ],
+      "name": "configureTask",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "donationId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint8",
+          "name": "purpose",
+          "type": "uint8"
+        }
+      ],
+      "name": "donate",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "name": "donations",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "donor",
+          "type": "address"
+        },
+        {
+          "internalType": "uint8",
+          "name": "purpose",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amountWei",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "unallocatedWei",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getTasks",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "bytes32",
+              "name": "id",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint8",
+              "name": "purpose",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint8",
+              "name": "urgency",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint256",
+              "name": "targetWei",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "allocatedWei",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "releasedWei",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "recipient",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "active",
+              "type": "bool"
+            }
+          ],
+          "internalType": "struct ReliefPool.Task[]",
+          "name": "",
+          "type": "tuple[]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "donationId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "refundUnallocated",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "bytes32",
+          "name": "taskId",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amountWei",
+          "type": "uint256"
+        }
+      ],
+      "name": "releaseTask",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "totalAllocatedWei",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "totalDonatedWei",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "totalRefundedWei",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "totalReleasedWei",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
+    }
+  ],
+  "bytecode": "0x608060405234801561001057600080fd5b506040516113a33803806113a383398101604081905261002f916100e2565b806001600160a01b03811661005e57604051631e4fbdf760e01b81526000600482015260240160405180910390fd5b61006781610092565b5060017f9b779b17422d0df92223018b32b4d1fa46e071723d6817e2486d003becc55f005550610112565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b6000602082840312156100f457600080fd5b81516001600160a01b038116811461010b57600080fd5b9392505050565b611282806101216000396000f3fe6080604052600436106100ec5760003560e01c80638f98c85a1161008a578063c90dc98b11610059578063c90dc98b146102c2578063ce3a7654146102e2578063d260c49c146102f8578063f2fde38b146103185761010a565b80638f98c85a146101fc57806394c6fc6614610212578063ae20c0cb14610225578063bed866f6146102455761010a565b80632cf95ef9116100c65780632cf95ef9146101875780635a1230ed1461019d578063715018a6146101bf5780638da5cb5b146101d45761010a565b806304a87e38146101235780630759dd711461014e57806315d48db4146101725761010a565b3661010a57604051631a9280c960e31b815260040160405180910390fd5b604051631a9280c960e31b815260040160405180910390fd5b34801561012f57600080fd5b50610138610338565b6040516101459190610fcf565b60405180910390f35b34801561015a57600080fd5b5061016460055481565b604051908152602001610145565b34801561017e57600080fd5b50610164602081565b34801561019357600080fd5b5061016460075481565b3480156101a957600080fd5b506101bd6101b8366004611079565b6103f9565b005b3480156101cb57600080fd5b506101bd610459565b3480156101e057600080fd5b506000546040516001600160a01b039091168152602001610145565b34801561020857600080fd5b5061016460045481565b6101bd6102203660046110a8565b61046d565b34801561023157600080fd5b506101bd6102403660046110d4565b610655565b34801561025157600080fd5b50610296610260366004611079565b6003602052600090815260409020805460018201546002909201546001600160a01b03821692600160a01b90920460ff16919084565b604080516001600160a01b03909516855260ff9093166020850152918301526060820152608001610145565b3480156102ce57600080fd5b506101bd6102dd36600461110d565b61080a565b3480156102ee57600080fd5b5061016460065481565b34801561030457600080fd5b506101bd610313366004611079565b610b88565b34801561032457600080fd5b506101bd61033336600461117c565b610cf2565b60606001805480602002602001604051908101604052809291908181526020016000905b828210156103f0576000848152602090819020604080516101008082018352600687029093018054825260018082015460ff808216858901529590048516938301939093526002810154606083015260038101546080830152600481015460a0830152600501546001600160a01b03811660c0830152600160a01b9004909216151560e0830152908352909201910161035c565b50505050905090565b610401610d32565b6000818152600360205260409020546001600160a01b03166104365760405163dd3e2f0f60e01b815260040160405180910390fd5b61043f81610d4e565b610456600160008051602061122d83398151915255565b50565b610461610f22565b61046b6000610f4f565b565b610475610d32565b8161049357604051631bf4348160e31b815260040160405180910390fd5b60058160ff1611156104b85760405163af62684f60e01b815260040160405180910390fd5b346000036104d95760405163162908e360e11b815260040160405180910390fd5b6000828152600360205260409020546001600160a01b03161561050f5760405163e66d9d2b60e01b815260040160405180910390fd5b6040805160808101825233815260ff8084166020808401918252348486018181526060860182815260008a81526003909452968320955186549451909516600160a01b026001600160a81b03199094166001600160a01b039590951694909417929092178455915160018401559251600290920191909155600480549091906105999084906111b4565b90915550506040805160ff83168152346020820152339184917fe323366ff91277e4ff5a1c7d06475537ddb9ca35dc8bc5ca55e9994ea64015c9910160405180910390a36105e682610d4e565b600082815260036020526040902060020154801561063957827ff7ff51ed7365bc51f80d6b5d0312553812b5f3e6a4722bd8ebf4d00549dd34b48260405161063091815260200190565b60405180910390a25b50610651600160008051602061122d83398151915255565b5050565b61065d610f22565b610665610d32565b60008281526002602052604081205490819003610695576040516395fd673b60e01b815260040160405180910390fd5b600060016106a381846111cd565b815481106106b3576106b36111e0565b9060005260206000209060060201905082600014806106e45750806004015481600301546106e191906111cd565b83115b156107025760405163162908e360e11b815260040160405180910390fd5b8281600401600082825461071691906111b4565b92505081905550826006600082825461072f91906111b4565b909155505060058101546040518481526001600160a01b039091169085907f8b944d078aaff6bf0f144fa81299120ad1f4628ff02d19e5a02cc5f9050bd4b69060200160405180910390a360058101546040516000916001600160a01b03169085908381818185875af1925050503d80600081146107c9576040519150601f19603f3d011682016040523d82523d6000602084013e6107ce565b606091505b50509050806107f0576040516312171d8360e31b815260040160405180910390fd5b505050610651600160008051602061122d83398151915255565b610812610f22565b8561083057604051631bf4348160e31b815260040160405180910390fd5b60018560ff161080610845575060058560ff16115b156108635760405163af62684f60e01b815260040160405180910390fd5b60018460ff161080610878575060038460ff16115b1561089657604051630330df6360e01b815260040160405180910390fd5b6001600160a01b0382166108bd57604051634e46966960e11b815260040160405180910390fd5b60008681526002602052604081205490819003610a9d57600154601f19016108f857604051636fe4d8a960e01b815260040160405180910390fd5b60408051610100808201835289825260ff808a1660208085019182528a8316858701908152606086018b815260006080880181815260a089018281526001600160a01b03808f1660c08c019081528e151560e08d019081526001805480820182558188529d516006909e027fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf681019e909e5599517fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf78e01805499518d16909d0261ffff199099169b169a909a179690961790995592517fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf88a0155517fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf989015590517fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cfa88015590517fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cfb909601805494511515600160a01b026001600160a81b031990951696909516959095179290921790925590548a8352600290915291902055610b7f565b60006001610aab81846111cd565b81548110610abb57610abb6111e0565b906000526020600020906006020190508060030154851015610af0576040516362bae05f60e11b815260040160405180910390fd5b60008160030154118015610b14575060058101546001600160a01b03858116911614155b15610b3257604051635102c63d60e01b815260040160405180910390fd5b60018101805460ff8881166101000261ffff19909216908a1617179055600281018590556005018054831515600160a01b026001600160a81b03199091166001600160a01b038616171790555b50505050505050565b610b90610d32565b600081815260036020526040902080546001600160a01b0316610bc65760405163dd3e2f0f60e01b815260040160405180910390fd5b80546001600160a01b03163314610bf05760405163439aada160e01b815260040160405180910390fd5b60028101546000819003610c175760405163162908e360e11b815260040160405180910390fd5b600082600201819055508060076000828254610c3391906111b4565b9091555050604051818152339084907f8045cdf5f3c03c1dd8eabdfe579d018165487677bc3ca026521966d88c83ed529060200160405180910390a3604051600090339083908381818185875af1925050503d8060008114610cb1576040519150601f19603f3d011682016040523d82523d6000602084013e610cb6565b606091505b5050905080610cd8576040516312171d8360e31b815260040160405180910390fd5b505050610456600160008051602061122d83398151915255565b610cfa610f22565b6001600160a01b038116610d2957604051631e4fbdf760e01b8152600060048201526024015b60405180910390fd5b61045681610f4f565b610d3a610f9f565b600260008051602061122d83398151915255565b60008181526003602081905260409091206002810154909181905b60008160ff16118015610d7c5750600083115b15610ef45760005b60015481108015610d955750600084115b15610ee357600060018281548110610daf57610daf6111e0565b906000526020600020906006020190508060050160149054906101000a900460ff161580610dec5750600181015460ff8481166101009092041614155b15610df75750610ed3565b8554600160a01b900460ff1615801590610e2457508554600182015460ff908116600160a01b9092041614155b15610e2f5750610ed3565b600081600301548260020154610e4591906111cd565b90506000818710610e565781610e58565b865b905080600003610e6a57505050610ed3565b80836003016000828254610e7e91906111b4565b90915550610e8e905081886111cd565b96508260000154897f65256c81f97979b14288874c89d7c00cdfbb59b282a00d35c18b2245053964af83604051610ec791815260200190565b60405180910390a35050505b610edc816111f6565b9050610d84565b50610eed8161120f565b9050610d69565b5060028301829055610f0682826111cd565b60056000828254610f1791906111b4565b909155505050505050565b6000546001600160a01b0316331461046b5760405163118cdaa760e01b8152336004820152602401610d20565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b60008051602061122d8339815191525460020361046b57604051633ee5aeb560e01b815260040160405180910390fd5b602080825282518282018190526000918401906040840190835b8181101561106e5783518051845260ff602082015116602085015260ff6040820151166040850152606081015160608501526080810151608085015260a081015160a085015260018060a01b0360c08201511660c085015260e0810151905061105660e085018215159052565b50602093909301926101009290920191600101610fe9565b509095945050505050565b60006020828403121561108b57600080fd5b5035919050565b803560ff811681146110a357600080fd5b919050565b600080604083850312156110bb57600080fd5b823591506110cb60208401611092565b90509250929050565b600080604083850312156110e757600080fd5b50508035926020909101359150565b80356001600160a01b03811681146110a357600080fd5b60008060008060008060c0878903121561112657600080fd5b8635955061113660208801611092565b945061114460408801611092565b935060608701359250611159608088016110f6565b915060a0870135801515811461116e57600080fd5b809150509295509295509295565b60006020828403121561118e57600080fd5b611197826110f6565b9392505050565b634e487b7160e01b600052601160045260246000fd5b808201808211156111c7576111c761119e565b92915050565b818103818111156111c7576111c761119e565b634e487b7160e01b600052603260045260246000fd5b6000600182016112085761120861119e565b5060010190565b600060ff8216806112225761122261119e565b600019019291505056fe9b779b17422d0df92223018b32b4d1fa46e071723d6817e2486d003becc55f00a264697066735822122015825e5f1b30881c9b628982f959be1b3f3ae774e4cb1135cbd98aa7ab3947dd64736f6c634300081e0033",
+  "deployedBytecode": "0x6080604052600436106100ec5760003560e01c80638f98c85a1161008a578063c90dc98b11610059578063c90dc98b146102c2578063ce3a7654146102e2578063d260c49c146102f8578063f2fde38b146103185761010a565b80638f98c85a146101fc57806394c6fc6614610212578063ae20c0cb14610225578063bed866f6146102455761010a565b80632cf95ef9116100c65780632cf95ef9146101875780635a1230ed1461019d578063715018a6146101bf5780638da5cb5b146101d45761010a565b806304a87e38146101235780630759dd711461014e57806315d48db4146101725761010a565b3661010a57604051631a9280c960e31b815260040160405180910390fd5b604051631a9280c960e31b815260040160405180910390fd5b34801561012f57600080fd5b50610138610338565b6040516101459190610fcf565b60405180910390f35b34801561015a57600080fd5b5061016460055481565b604051908152602001610145565b34801561017e57600080fd5b50610164602081565b34801561019357600080fd5b5061016460075481565b3480156101a957600080fd5b506101bd6101b8366004611079565b6103f9565b005b3480156101cb57600080fd5b506101bd610459565b3480156101e057600080fd5b506000546040516001600160a01b039091168152602001610145565b34801561020857600080fd5b5061016460045481565b6101bd6102203660046110a8565b61046d565b34801561023157600080fd5b506101bd6102403660046110d4565b610655565b34801561025157600080fd5b50610296610260366004611079565b6003602052600090815260409020805460018201546002909201546001600160a01b03821692600160a01b90920460ff16919084565b604080516001600160a01b03909516855260ff9093166020850152918301526060820152608001610145565b3480156102ce57600080fd5b506101bd6102dd36600461110d565b61080a565b3480156102ee57600080fd5b5061016460065481565b34801561030457600080fd5b506101bd610313366004611079565b610b88565b34801561032457600080fd5b506101bd61033336600461117c565b610cf2565b60606001805480602002602001604051908101604052809291908181526020016000905b828210156103f0576000848152602090819020604080516101008082018352600687029093018054825260018082015460ff808216858901529590048516938301939093526002810154606083015260038101546080830152600481015460a0830152600501546001600160a01b03811660c0830152600160a01b9004909216151560e0830152908352909201910161035c565b50505050905090565b610401610d32565b6000818152600360205260409020546001600160a01b03166104365760405163dd3e2f0f60e01b815260040160405180910390fd5b61043f81610d4e565b610456600160008051602061122d83398151915255565b50565b610461610f22565b61046b6000610f4f565b565b610475610d32565b8161049357604051631bf4348160e31b815260040160405180910390fd5b60058160ff1611156104b85760405163af62684f60e01b815260040160405180910390fd5b346000036104d95760405163162908e360e11b815260040160405180910390fd5b6000828152600360205260409020546001600160a01b03161561050f5760405163e66d9d2b60e01b815260040160405180910390fd5b6040805160808101825233815260ff8084166020808401918252348486018181526060860182815260008a81526003909452968320955186549451909516600160a01b026001600160a81b03199094166001600160a01b039590951694909417929092178455915160018401559251600290920191909155600480549091906105999084906111b4565b90915550506040805160ff83168152346020820152339184917fe323366ff91277e4ff5a1c7d06475537ddb9ca35dc8bc5ca55e9994ea64015c9910160405180910390a36105e682610d4e565b600082815260036020526040902060020154801561063957827ff7ff51ed7365bc51f80d6b5d0312553812b5f3e6a4722bd8ebf4d00549dd34b48260405161063091815260200190565b60405180910390a25b50610651600160008051602061122d83398151915255565b5050565b61065d610f22565b610665610d32565b60008281526002602052604081205490819003610695576040516395fd673b60e01b815260040160405180910390fd5b600060016106a381846111cd565b815481106106b3576106b36111e0565b9060005260206000209060060201905082600014806106e45750806004015481600301546106e191906111cd565b83115b156107025760405163162908e360e11b815260040160405180910390fd5b8281600401600082825461071691906111b4565b92505081905550826006600082825461072f91906111b4565b909155505060058101546040518481526001600160a01b039091169085907f8b944d078aaff6bf0f144fa81299120ad1f4628ff02d19e5a02cc5f9050bd4b69060200160405180910390a360058101546040516000916001600160a01b03169085908381818185875af1925050503d80600081146107c9576040519150601f19603f3d011682016040523d82523d6000602084013e6107ce565b606091505b50509050806107f0576040516312171d8360e31b815260040160405180910390fd5b505050610651600160008051602061122d83398151915255565b610812610f22565b8561083057604051631bf4348160e31b815260040160405180910390fd5b60018560ff161080610845575060058560ff16115b156108635760405163af62684f60e01b815260040160405180910390fd5b60018460ff161080610878575060038460ff16115b1561089657604051630330df6360e01b815260040160405180910390fd5b6001600160a01b0382166108bd57604051634e46966960e11b815260040160405180910390fd5b60008681526002602052604081205490819003610a9d57600154601f19016108f857604051636fe4d8a960e01b815260040160405180910390fd5b60408051610100808201835289825260ff808a1660208085019182528a8316858701908152606086018b815260006080880181815260a089018281526001600160a01b03808f1660c08c019081528e151560e08d019081526001805480820182558188529d516006909e027fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf681019e909e5599517fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf78e01805499518d16909d0261ffff199099169b169a909a179690961790995592517fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf88a0155517fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cf989015590517fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cfa88015590517fb10e2d527612073b26eecdfd717e6a320cf44b4afac2b0732d9fcbe2b7fa0cfb909601805494511515600160a01b026001600160a81b031990951696909516959095179290921790925590548a8352600290915291902055610b7f565b60006001610aab81846111cd565b81548110610abb57610abb6111e0565b906000526020600020906006020190508060030154851015610af0576040516362bae05f60e11b815260040160405180910390fd5b60008160030154118015610b14575060058101546001600160a01b03858116911614155b15610b3257604051635102c63d60e01b815260040160405180910390fd5b60018101805460ff8881166101000261ffff19909216908a1617179055600281018590556005018054831515600160a01b026001600160a81b03199091166001600160a01b038616171790555b50505050505050565b610b90610d32565b600081815260036020526040902080546001600160a01b0316610bc65760405163dd3e2f0f60e01b815260040160405180910390fd5b80546001600160a01b03163314610bf05760405163439aada160e01b815260040160405180910390fd5b60028101546000819003610c175760405163162908e360e11b815260040160405180910390fd5b600082600201819055508060076000828254610c3391906111b4565b9091555050604051818152339084907f8045cdf5f3c03c1dd8eabdfe579d018165487677bc3ca026521966d88c83ed529060200160405180910390a3604051600090339083908381818185875af1925050503d8060008114610cb1576040519150601f19603f3d011682016040523d82523d6000602084013e610cb6565b606091505b5050905080610cd8576040516312171d8360e31b815260040160405180910390fd5b505050610456600160008051602061122d83398151915255565b610cfa610f22565b6001600160a01b038116610d2957604051631e4fbdf760e01b8152600060048201526024015b60405180910390fd5b61045681610f4f565b610d3a610f9f565b600260008051602061122d83398151915255565b60008181526003602081905260409091206002810154909181905b60008160ff16118015610d7c5750600083115b15610ef45760005b60015481108015610d955750600084115b15610ee357600060018281548110610daf57610daf6111e0565b906000526020600020906006020190508060050160149054906101000a900460ff161580610dec5750600181015460ff8481166101009092041614155b15610df75750610ed3565b8554600160a01b900460ff1615801590610e2457508554600182015460ff908116600160a01b9092041614155b15610e2f5750610ed3565b600081600301548260020154610e4591906111cd565b90506000818710610e565781610e58565b865b905080600003610e6a57505050610ed3565b80836003016000828254610e7e91906111b4565b90915550610e8e905081886111cd565b96508260000154897f65256c81f97979b14288874c89d7c00cdfbb59b282a00d35c18b2245053964af83604051610ec791815260200190565b60405180910390a35050505b610edc816111f6565b9050610d84565b50610eed8161120f565b9050610d69565b5060028301829055610f0682826111cd565b60056000828254610f1791906111b4565b909155505050505050565b6000546001600160a01b0316331461046b5760405163118cdaa760e01b8152336004820152602401610d20565b600080546001600160a01b038381166001600160a01b0319831681178455604051919092169283917f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e09190a35050565b60008051602061122d8339815191525460020361046b57604051633ee5aeb560e01b815260040160405180910390fd5b602080825282518282018190526000918401906040840190835b8181101561106e5783518051845260ff602082015116602085015260ff6040820151166040850152606081015160608501526080810151608085015260a081015160a085015260018060a01b0360c08201511660c085015260e0810151905061105660e085018215159052565b50602093909301926101009290920191600101610fe9565b509095945050505050565b60006020828403121561108b57600080fd5b5035919050565b803560ff811681146110a357600080fd5b919050565b600080604083850312156110bb57600080fd5b823591506110cb60208401611092565b90509250929050565b600080604083850312156110e757600080fd5b50508035926020909101359150565b80356001600160a01b03811681146110a357600080fd5b60008060008060008060c0878903121561112657600080fd5b8635955061113660208801611092565b945061114460408801611092565b935060608701359250611159608088016110f6565b915060a0870135801515811461116e57600080fd5b809150509295509295509295565b60006020828403121561118e57600080fd5b611197826110f6565b9392505050565b634e487b7160e01b600052601160045260246000fd5b808201808211156111c7576111c761119e565b92915050565b818103818111156111c7576111c761119e565b634e487b7160e01b600052603260045260246000fd5b6000600182016112085761120861119e565b5060010190565b600060ff8216806112225761122261119e565b600019019291505056fe9b779b17422d0df92223018b32b4d1fa46e071723d6817e2486d003becc55f00a264697066735822122015825e5f1b30881c9b628982f959be1b3f3ae774e4cb1135cbd98aa7ab3947dd64736f6c634300081e0033",
+  "metadata": {
+    "compiler": {
+      "version": "0.8.30+commit.73712a01"
+    },
+    "language": "Solidity",
+    "output": {
+      "abi": [
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "initialOwner",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "nonpayable",
+          "type": "constructor"
+        },
+        {
+          "inputs": [],
+          "name": "DirectPaymentUnsupported",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "DuplicateDonation",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "InvalidAmount",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "InvalidId",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "InvalidPurpose",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "InvalidRecipient",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "InvalidUrgency",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "NotDonor",
+          "type": "error"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnableInvalidOwner",
+          "type": "error"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "OwnableUnauthorizedAccount",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "RecipientLocked",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "ReentrancyGuardReentrantCall",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "TargetBelowAllocated",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "TaskLimitReached",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "TransferFailed",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "UnknownDonation",
+          "type": "error"
+        },
+        {
+          "inputs": [],
+          "name": "UnknownTask",
+          "type": "error"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "donationId",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "taskId",
+              "type": "bytes32"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "amountWei",
+              "type": "uint256"
+            }
+          ],
+          "name": "DonationAllocated",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "donationId",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "donor",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint8",
+              "name": "purpose",
+              "type": "uint8"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "amountWei",
+              "type": "uint256"
+            }
+          ],
+          "name": "DonationReceived",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "donationId",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "donor",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "amountWei",
+              "type": "uint256"
+            }
+          ],
+          "name": "DonationRefunded",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "donationId",
+              "type": "bytes32"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "amountWei",
+              "type": "uint256"
+            }
+          ],
+          "name": "DonationUnallocated",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        },
+        {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "bytes32",
+              "name": "taskId",
+              "type": "bytes32"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "recipient",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "amountWei",
+              "type": "uint256"
+            }
+          ],
+          "name": "TaskReleased",
+          "type": "event"
+        },
+        {
+          "stateMutability": "payable",
+          "type": "fallback"
+        },
+        {
+          "inputs": [],
+          "name": "MAX_TASKS",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "donationId",
+              "type": "bytes32"
+            }
+          ],
+          "name": "allocateRemaining",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "taskId",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint8",
+              "name": "purpose",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint8",
+              "name": "urgency",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint256",
+              "name": "targetWei",
+              "type": "uint256"
+            },
+            {
+              "internalType": "address",
+              "name": "recipient",
+              "type": "address"
+            },
+            {
+              "internalType": "bool",
+              "name": "active",
+              "type": "bool"
+            }
+          ],
+          "name": "configureTask",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "donationId",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint8",
+              "name": "purpose",
+              "type": "uint8"
+            }
+          ],
+          "name": "donate",
+          "outputs": [],
+          "stateMutability": "payable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "",
+              "type": "bytes32"
+            }
+          ],
+          "name": "donations",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "donor",
+              "type": "address"
+            },
+            {
+              "internalType": "uint8",
+              "name": "purpose",
+              "type": "uint8"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amountWei",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "unallocatedWei",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "getTasks",
+          "outputs": [
+            {
+              "components": [
+                {
+                  "internalType": "bytes32",
+                  "name": "id",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "purpose",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "urgency",
+                  "type": "uint8"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "targetWei",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "allocatedWei",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "releasedWei",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "address",
+                  "name": "recipient",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bool",
+                  "name": "active",
+                  "type": "bool"
+                }
+              ],
+              "internalType": "struct ReliefPool.Task[]",
+              "name": "",
+              "type": "tuple[]"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "owner",
+          "outputs": [
+            {
+              "internalType": "address",
+              "name": "",
+              "type": "address"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "donationId",
+              "type": "bytes32"
+            }
+          ],
+          "name": "refundUnallocated",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "bytes32",
+              "name": "taskId",
+              "type": "bytes32"
+            },
+            {
+              "internalType": "uint256",
+              "name": "amountWei",
+              "type": "uint256"
+            }
+          ],
+          "name": "releaseTask",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "renounceOwnership",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "totalAllocatedWei",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "totalDonatedWei",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "totalRefundedWei",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [],
+          "name": "totalReleasedWei",
+          "outputs": [
+            {
+              "internalType": "uint256",
+              "name": "",
+              "type": "uint256"
+            }
+          ],
+          "stateMutability": "view",
+          "type": "function"
+        },
+        {
+          "inputs": [
+            {
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "transferOwnership",
+          "outputs": [],
+          "stateMutability": "nonpayable",
+          "type": "function"
+        },
+        {
+          "stateMutability": "payable",
+          "type": "receive"
+        }
+      ],
+      "devdoc": {
+        "errors": {
+          "OwnableInvalidOwner(address)": [
+            {
+              "details": "The owner is not a valid owner account. (eg. `address(0)`)"
+            }
+          ],
+          "OwnableUnauthorizedAccount(address)": [
+            {
+              "details": "The caller account is not authorized to perform an operation."
+            }
+          ],
+          "ReentrancyGuardReentrantCall()": [
+            {
+              "details": "Unauthorized reentrant call."
+            }
+          ]
+        },
+        "kind": "dev",
+        "methods": {
+          "owner()": {
+            "details": "Returns the address of the current owner."
+          },
+          "renounceOwnership()": {
+            "details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby disabling any functionality that is only available to the owner."
+          },
+          "transferOwnership(address)": {
+            "details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+          }
+        },
+        "version": 1
+      },
+      "userdoc": {
+        "kind": "user",
+        "methods": {},
+        "notice": "Native MON escrow. Identifiers must contain no personal information.",
+        "version": 1
+      }
+    },
+    "settings": {
+      "compilationTarget": {
+        "contracts/ReliefPool.sol": "ReliefPool"
+      },
+      "evmVersion": "paris",
+      "libraries": {},
+      "metadata": {
+        "bytecodeHash": "ipfs"
+      },
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "remappings": []
+    },
+    "sources": {
+      "@openzeppelin/contracts/access/Ownable.sol": {
+        "keccak256": "0xff6d0bb2e285473e5311d9d3caacb525ae3538a80758c10649a4d61029b017bb",
+        "license": "MIT",
+        "urls": [
+          "bzz-raw://8ed324d3920bb545059d66ab97d43e43ee85fd3bd52e03e401f020afb0b120f6",
+          "dweb:/ipfs/QmfEckWLmZkDDcoWrkEvMWhms66xwTLff9DDhegYpvHo1a"
+        ]
+      },
+      "@openzeppelin/contracts/utils/Context.sol": {
+        "keccak256": "0x493033a8d1b176a037b2cc6a04dad01a5c157722049bbecf632ca876224dd4b2",
+        "license": "MIT",
+        "urls": [
+          "bzz-raw://6a708e8a5bdb1011c2c381c9a5cfd8a9a956d7d0a9dc1bd8bcdaf52f76ef2f12",
+          "dweb:/ipfs/Qmax9WHBnVsZP46ZxEMNRQpLQnrdE4dK8LehML1Py8FowF"
+        ]
+      },
+      "@openzeppelin/contracts/utils/ReentrancyGuard.sol": {
+        "keccak256": "0xa516cbf1c7d15d3517c2d668601ce016c54395bf5171918a14e2686977465f53",
+        "license": "MIT",
+        "urls": [
+          "bzz-raw://1e1d079e8edfb58efd23a311e315a4807b01b5d1cf153f8fa2d0608b9dec3e99",
+          "dweb:/ipfs/QmTBExeX2SDTkn5xbk5ssbYSx7VqRp9H4Ux1CY4uQM4b9N"
+        ]
+      },
+      "@openzeppelin/contracts/utils/StorageSlot.sol": {
+        "keccak256": "0xcf74f855663ce2ae00ed8352666b7935f6cddea2932fdf2c3ecd30a9b1cd0e97",
+        "license": "MIT",
+        "urls": [
+          "bzz-raw://9f660b1f351b757dfe01438e59888f31f33ded3afcf5cb5b0d9bf9aa6f320a8b",
+          "dweb:/ipfs/QmarDJ5hZEgBtCmmrVzEZWjub9769eD686jmzb2XpSU1cM"
+        ]
+      },
+      "contracts/ReliefPool.sol": {
+        "keccak256": "0x1acf4b8d2f82628c416f6e5fd61adfe25e8ad4483bb6ae9c0d1089572c267a85",
+        "license": "MIT",
+        "urls": [
+          "bzz-raw://00bd892a1ab16fb7640b3499f4cb8a3ce090fe778a5fda4f77fdb7b66ed19990",
+          "dweb:/ipfs/QmVpddSEBoZrBj56d83zhDs6Jw97y3miVkAuZrjn7X19VF"
+        ]
+      }
+    },
+    "version": 1
+  }
+}

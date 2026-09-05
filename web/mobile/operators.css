@@ -1,0 +1,24 @@
+.op-mobile-section { padding: 24px 0; margin-top: 24px; border-block: 1px solid var(--line, #dce4df); min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+.op-mobile-section *, .op-mobile-section *::before, .op-mobile-section *::after { box-sizing: border-box; min-width: 0; letter-spacing: 0; }
+.op-mobile-section [hidden] { display: none !important; }
+.op-mobile-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.op-mobile-section h2 { font-size: 18px; margin: 0; }
+.op-mobile-section button { max-width: 100%; min-height: 44px; padding: 10px 14px; border: 1px solid var(--line, #dce4df); border-radius: 5px; background: white; color: var(--green, #176851); font: inherit; white-space: normal; cursor: pointer; }
+.op-mobile-head button { width: 44px; height: 44px; padding: 10px; flex: none; display: inline-grid; place-items: center; }
+.op-mobile-section svg { width: 20px; height: 20px; flex: none; }
+.op-mobile-section .op-mobile-primary { background: var(--green, #176851); color: white; border-color: transparent; }
+.op-mobile-section button:disabled { opacity: .5; cursor: not-allowed; }
+.op-mobile-section form { margin: 16px 0 0; max-width: 620px; }
+.op-mobile-section fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; min-width: 0; }
+.op-mobile-section label { font-size: 13px; }
+.op-mobile-section input { width: 100%; max-width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #cbd7cf; border-radius: 5px; font: inherit; background: white; }
+.op-mobile-note { color: var(--muted, #687570); font-size: 12px; margin: 10px 0; }
+.op-mobile-message { font-size: 13px; min-height: 21px; margin: 10px 0; }
+.op-mobile-message[data-error="true"] { color: #a8343c; }
+.op-mobile-details { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 6px 12px; margin: 16px 0; font-size: 13px; }
+.op-mobile-details dt { color: var(--muted, #687570); }
+.op-mobile-details dd { margin: 0; overflow-wrap: anywhere; }
+.op-mobile-links { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 16px; }
+.op-mobile-links a { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; min-height: 44px; text-decoration: underline; text-underline-offset: 3px; }
+.op-mobile-section :is(a, button, input):focus-visible { outline: 3px solid #e3ac32; outline-offset: 3px; }
+@media (max-width: 360px) { .op-mobile-section { padding-block: 18px; } .op-mobile-details { grid-template-columns: minmax(0, 1fr); gap: 2px; } .op-mobile-details dd { margin-bottom: 6px; } }

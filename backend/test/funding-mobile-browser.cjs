@@ -1,0 +1,81 @@
+"use strict";
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
+const { chromium } = require("playwright");
+const { id } = require("ethers");
+const { fixture } = require("./helpers/funding-read-fixture.cjs");
+
+(async () => {
+  const f = await fixture(); let browser;
+  try {
+    const alice = await f.user("Alice"), bob = await f.user("Bob");
+    const a = f.prepare(alice, "mobile-alice"), b = f.prepare(bob, "mobile-bob");
+    for (let i = 0; i < 11; i++) f.prepare(alice, "mobile-prepared-" + i, { purpose: 2 });
+    f.received(a); f.received(b);
+    const taskId = id("task"), contractId = id("contract"), recipient = "0x" + "44".repeat(20);
+    f.append("TaskRegistered", { taskId, purpose: 1, projectId: id("project") });
+    f.append("DonationAllocated", { taskId, donationId: a.permit.donationId, amountWei: "60000000000000000000" });
+    f.append("ContractLocked", { contractId, taskId, recipient, amountWei: "40000000000000000000" });
+    f.append("BatchPaid", { contractId, paymentId: id("payment"), batchId: id("batch"), recipient, amountWei: "15000000000000000000" });
+    browser = await chromium.launch({ channel: "msedge", headless: true });
+    const context = await browser.newContext(), page = await context.newPage(), errors = [];
+    page.on("pageerror", error => errors.push(error.message));
+    await page.goto(f.base + "/mobile/#home");
+    await page.waitForFunction(() => document.querySelector("#poolMonValue").textContent === "200.000000000000000002");
+    assert.equal(await page.locator("#participantValue").innerText(), "2");
+    assert.equal(await page.locator("#homeEscrow").innerText(), "-- MON");
+    await page.locator("#loginOpenBtn").click();
+    await page.locator('#authForm [name="email"]').fill(alice.user.email);
+    await page.locator('#authForm [name="password"]').fill("local-funding-read-password");
+    await page.locator("#authSubmit").click();
+    await page.waitForFunction(() => document.querySelector("#homeEscrow").textContent === "85.000000000000000001 MON");
+    await page.evaluate(() => { location.hash = "#account"; });
+    await page.waitForFunction(() => document.querySelectorAll("#mf-list article").length === 10);
+    assert.equal(await page.locator("#accountEscrow").innerText(), "85.000000000000000001 MON");
+    assert.equal(await page.locator("#accountAllocated").innerText(), "20.000000000000000000 MON");
+    await page.locator("#mf-next").click(); await page.waitForFunction(() => document.querySelectorAll("#mf-list article").length === 2);
+    await page.locator("#mf-state").selectOption("RECORDED");
+    await page.waitForFunction(() => document.querySelectorAll("#mf-list article").length === 1);
+    await page.locator("#mf-list a").click();
+    await page.waitForFunction(() => document.querySelectorAll("#mf-flow li").length === 4);
+    assert.ok((await page.locator("#mf-detail").innerText()).includes("alice@example.test"));
+    assert.equal(await page.locator("#homeEscrow").innerText(), "85.000000000000000001 MON");
+    await page.reload(); await page.waitForFunction(() => document.querySelectorAll("#mf-flow li").length === 4);
+    const output = path.resolve(__dirname, "../../../outputs/funding-mobile-browser"); fs.mkdirSync(output, { recursive: true });
+    for (const width of [320, 390, 768, 1440]) {
+      await page.setViewportSize({ width, height: 960 }); await page.locator("#funding-mobile").scrollIntoViewIfNeeded();
+      assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "overflow at " + width);
+      await page.screenshot({ path: path.join(output, `detail-${width}.png`) });
+    }
+    await page.evaluate(value => { location.hash = "#donation/" + value; }, b.permit.donationId);
+    await page.waitForFunction(() => document.querySelector("#mf-status").dataset.error === "true");
+    assert.equal(await page.locator("#mf-detail").innerText(), "");
+    assert.equal((await page.locator("body").innerText()).includes("bob@example.test"), false);
+    await page.evaluate(value => { location.hash = "#donation/" + value; }, a.permit.donationId);
+    await page.waitForFunction(() => document.querySelectorAll("#mf-flow li").length === 4);
+    f.funding.replaceFromBlock({ fromBlock: 1, events: [], expectedVersion: f.funding.read().storeVersion, reason: "Verified mobile reorg fixture" });
+    await page.locator("#mf-refresh").click();
+    await page.waitForFunction(() => document.querySelector("#mf-detail").textContent.includes("原入账已撤下"));
+    assert.equal(await page.locator("#poolMonValue").innerText(), "0.000000000000000000");
+    assert.equal(await page.locator("#homeEscrow").innerText(), "0.000000000000000000 MON");
+    await page.route("**/v1/funding/pool", route => route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ data: null, error: { message: "Pool unavailable" } }) }));
+    await page.locator("#mf-refresh").click(); await page.waitForFunction(() => document.querySelector("#poolGapText").textContent.includes("Pool unavailable"));
+    assert.equal(await page.locator("#poolMonValue").innerText(), "--");
+    await page.unrouteAll({ behavior: "wait" });
+    await page.evaluate(() => { location.hash = "#account"; });
+    await page.waitForFunction(() => document.querySelectorAll("#mf-list article").length === 10);
+    let entered, release;
+    const started = new Promise(resolve => { entered = resolve; }), pause = new Promise(resolve => { release = resolve; });
+    await page.route("**/v1/funding/me/donations?*", async route => {
+      const response = await route.fetch(); entered(); await pause; await route.fulfill({ response }).catch(() => {});
+    });
+    await page.locator("#mf-refresh").click(); await started;
+    await page.locator("#logoutBtn").click(); await page.waitForFunction(() => document.querySelector("#mf-private").hidden);
+    release(); await page.unrouteAll({ behavior: "wait" });
+    assert.equal(await page.locator("#mf-detail").innerText(), ""); assert.equal(await page.locator("#mf-list").innerText(), "");
+    assert.equal(await page.locator("#homeEscrow").innerText(), "-- MON");
+    assert.deepEqual(errors, []);
+    console.log(JSON.stringify({ result: "PASS", actualBackend: true, sourceIsolation: true, noPublicChain: true, screenshots: output }));
+  } finally { await browser?.close(); await f.close(); }
+})().catch(error => { console.error(error); process.exitCode = 1; });

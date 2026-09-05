@@ -1,0 +1,32 @@
+.wallet-band{padding:22px 0;border-bottom:1px solid var(--line)}
+.wallet-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
+.wallet-actions>*{max-width:100%;min-width:0}
+.wallet-address{font-family:ui-monospace,Consolas,monospace;font-size:13px;overflow-wrap:anywhere}
+.personal-band>div,.account-heading>div{min-width:0;flex:1}
+.personal-band strong{overflow-wrap:anywhere}
+.wallet-band .form-result{margin-top:12px}
+.wallet-summary{display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px 16px;font-size:13px;margin:18px 0}
+.wallet-summary dt{color:var(--muted)}
+.wallet-summary dd{margin:0;overflow-wrap:anywhere}
+.donation-preview{border-top:2px solid var(--green);padding:20px 0;margin-top:22px}
+.allocation-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 16px;padding:12px 0;border-bottom:1px solid var(--line);font-size:13px}
+.allocation-row code{grid-column:1/-1;font-size:11px;overflow-wrap:anywhere;color:var(--muted)}
+.allocation-row a{grid-column:1/-1}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--line)}
+.auth-tabs button{border:0;border-bottom:2px solid transparent;background:transparent;min-height:44px;padding:10px;color:var(--muted)}
+.auth-tabs button[aria-selected=true]{border-bottom-color:var(--green);color:var(--green);font-weight:700}
+#walletContract,#pendingSubmissions p{overflow-wrap:anywhere}
+#walletContract svg,#pendingSubmissions svg,#donationList svg{width:14px;height:14px}
+#pendingSubmissions input{margin:5px 0 10px;font-family:ui-monospace,Consolas,monospace;font-size:12px}
+#walletSyncStatus{flex-shrink:0}
+#accountStatus{min-width:0}
+.wallet-band .notice a{text-decoration:underline}
+.email-band{padding:18px 0;border-bottom:1px solid var(--line)}
+.email-band h3{font-size:15px}
+.email-band .caption,#passwordModeNote{margin-top:8px}
+.email-band fieldset,#passwordFields{gap:10px}
+.email-band label,#passwordFields label{margin-bottom:-4px}
+#forgotPassword{margin:12px 0}
+#passwordBack{justify-self:start;display:inline-flex;align-items:center;gap:6px}
+#emailVerification[hidden],#passwordResetForm[hidden],#authPanel[hidden],.auth-tabs[hidden]{display:none}
+@media(max-width:600px){.wallet-summary{grid-template-columns:85px minmax(0,1fr);gap:9px}.wallet-actions{gap:8px}.wallet-actions .primary-button,.wallet-actions .secondary-button{font-size:13px}.allocation-row{grid-template-columns:minmax(0,1fr)}.allocation-row span{font-weight:600}.pool-band .section-heading{align-items:flex-start}.account-balances{gap:16px 12px}#walletBalance{font-size:18px}}

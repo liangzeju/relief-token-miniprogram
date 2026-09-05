@@ -1,0 +1,475 @@
+openapi: 3.0.3
+info:
+  title: Relief Exchange API
+  version: 1.0.0-draft
+  description: >-
+    后端 API 草案。人民币、MON、合同和链上交易都由服务端控制；移动端和管理端均不保存私钥。
+servers:
+  - url: https://api.example.invalid/v1
+security:
+  - bearerAuth: []
+tags:
+  - name: Donations
+  - name: Tasks
+  - name: Resources
+  - name: Contracts
+  - name: Audit
+paths:
+  /demo/process:
+    get:
+      tags: [Audit]
+      summary: 查询管理端演示流程状态和可视化数据
+      operationId: getDemoProcess
+      responses:
+        '200':
+          description: 演示过程投影
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: {$ref: '#/components/schemas/DemoProcess'}
+        '403': {$ref: '#/components/responses/ErrorResponse'}
+  /details/{type}/{id}:
+    get:
+      tags: [Audit]
+      summary: 查询主功能详情投影
+      operationId: getEntityDetail
+      parameters:
+        - {name: type, in: path, required: true, schema: {type: string, enum: [donation, task, response, award, contract, delivery, settlement, redemption]}}
+        - {name: id, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: 主对象详情、链上交易、审计事件和水印血缘
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: {$ref: '#/components/schemas/EntityDetail'}
+        '403': {$ref: '#/components/responses/ErrorResponse'}
+  /donations:
+    post:
+      tags: [Donations]
+      summary: 创建人民币捐赠订单
+      operationId: createDonation
+      security: [{bearerAuth: []}]
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CreateDonationRequest'}
+      responses:
+        '201': {$ref: '#/components/responses/DonationResponse'}
+        '409': {$ref: '#/components/responses/ErrorResponse'}
+  /donations/{donationId}:
+    get:
+      tags: [Donations]
+      summary: 查询捐赠及 MON 水印生命周期
+      operationId: getDonation
+      parameters: [{name: donationId, in: path, required: true, schema: {type: string, format: uuid}}]
+      responses:
+        '200': {$ref: '#/components/responses/DonationResponse'}
+        '404': {$ref: '#/components/responses/ErrorResponse'}
+  /donations/{donationId}/receipt:
+    get:
+      tags: [Donations]
+      summary: 下载已确认 MON 入账的 PDF 捐赠凭证
+      operationId: downloadDonationReceipt
+      parameters:
+        - {name: donationId, in: path, required: true, schema: {type: string, format: uuid}}
+      responses:
+        '200':
+          description: PDF 凭证
+          content:
+            application/pdf:
+              schema: {type: string, format: binary}
+        '409': {$ref: '#/components/responses/ErrorResponse'}
+  /donations/{donationId}/certificate:
+    get:
+      tags: [Donations]
+      summary: 下载带救灾项目二维码目标和 Monad 链上证明的 PDF 证书
+      operationId: downloadReliefProjectCertificate
+      parameters:
+        - {name: donationId, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: PDF 项目证书，响应头包含 X-PDF-SHA256、X-Attestation-Hash 和 X-Public-Trace
+          content:
+            application/pdf:
+              schema: {type: string, format: binary}
+        '409': {$ref: '#/components/responses/ErrorResponse'}
+  /donations/{donationId}/compliance-review:
+    post:
+      tags: [Donations]
+      summary: 合规员审核捐赠
+      operationId: reviewDonation
+      parameters:
+        - {name: donationId, in: path, required: true, schema: {type: string, format: uuid}}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision]
+              properties:
+                decision: {type: string, enum: [approve, reject, manual_review, freeze]}
+                reason: {type: string, minLength: 1}
+      responses:
+        '200': {$ref: '#/components/responses/DonationResponse'}
+        '403': {$ref: '#/components/responses/ErrorResponse'}
+  /tasks:
+    post:
+      tags: [Tasks]
+      summary: 上报灾情任务
+      operationId: createTask
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CreateTaskRequest'}
+      responses:
+        '201': {$ref: '#/components/responses/TaskResponse'}
+  /tasks/{taskId}/approve:
+    post:
+      tags: [Tasks]
+      summary: 正式批准任务
+      operationId: approveTask
+      parameters:
+        - {name: taskId, in: path, required: true, schema: {type: string, format: uuid}}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ApprovalRequest'}
+      responses:
+        '200': {$ref: '#/components/responses/TaskResponse'}
+        '409': {$ref: '#/components/responses/ErrorResponse'}
+  /tasks/{taskId}/responses:
+    post:
+      tags: [Resources]
+      summary: 认证资源机构提交响应方案
+      operationId: submitResourceResponse
+      parameters:
+        - {name: taskId, in: path, required: true, schema: {type: string, format: uuid}}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ResourceResponseRequest'}
+      responses:
+        '201': {$ref: '#/components/responses/ResourceResponse'}
+        '403': {$ref: '#/components/responses/ErrorResponse'}
+  /awards:
+    post:
+      tags: [Resources]
+      summary: 提出资源中选方案
+      operationId: proposeAward
+      parameters: [{$ref: '#/components/parameters/IdempotencyKey'}]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [responseId, reason]
+              properties:
+                responseId: {type: string, format: uuid}
+                reason: {type: string, minLength: 1}
+      responses:
+        '201': {$ref: '#/components/responses/AwardResponse'}
+  /awards/{awardId}/approve:
+    post:
+      tags: [Resources]
+      summary: 审批资源中选方案并创建合同草案
+      operationId: approveAward
+      parameters:
+        - {name: awardId, in: path, required: true, schema: {type: string, format: uuid}}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      responses:
+        '200': {$ref: '#/components/responses/AwardResponse'}
+  /contracts/{contractId}/deliveries:
+    post:
+      tags: [Contracts]
+      summary: 创建交付批次
+      operationId: createDelivery
+      parameters:
+        - {name: contractId, in: path, required: true, schema: {type: string, format: uuid}}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/DeliveryRequest'}
+      responses:
+        '201': {$ref: '#/components/responses/DeliveryResponse'}
+  /deliveries/{deliveryId}/accept:
+    post:
+      tags: [Contracts]
+      summary: 现场验收交付批次
+      operationId: acceptDelivery
+      parameters:
+        - {name: deliveryId, in: path, required: true, schema: {type: string, format: uuid}}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [acceptedQuantity, result, evidenceIds]
+              properties:
+                acceptedQuantity: {type: integer, minimum: 0}
+                result: {type: string, enum: [accepted, rejected, disputed]}
+                evidenceIds: {type: array, items: {type: string, format: uuid}}
+                note: {type: string}
+      responses:
+        '200': {$ref: '#/components/responses/DeliveryResponse'}
+  /contracts/{contractId}/settlements:
+    post:
+      tags: [Contracts]
+      summary: 创建结算申请
+      operationId: createSettlement
+      parameters:
+        - {name: contractId, in: path, required: true, schema: {type: string, format: uuid}}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      responses:
+        '201': {$ref: '#/components/responses/SettlementResponse'}
+  /settlements/{settlementId}/redemptions:
+    post:
+      tags: [Contracts]
+      summary: 组织按兑换规则提交人民币兑换申请
+      operationId: createRedemption
+      parameters:
+        - {name: settlementId, in: path, required: true, schema: {type: string, format: uuid}}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [exchangeRuleId, monAmount, payoutAccountId]
+              properties:
+                exchangeRuleId: {type: string, format: uuid}
+                monAmount: {type: integer, minimum: 1, description: MON 最小单位 wei}
+                payoutAccountId: {type: string, format: uuid}
+      responses:
+        '201': {$ref: '#/components/responses/RedemptionResponse'}
+  /redemptions/{redemptionId}/approve:
+    post:
+      tags: [Contracts]
+      summary: 财务/合规审批兑换申请并锁定 MON
+      operationId: approveRedemption
+      parameters:
+        - {name: redemptionId, in: path, required: true, schema: {type: string, format: uuid}}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      responses:
+        '200': {$ref: '#/components/responses/RedemptionResponse'}
+  /redemptions/{redemptionId}/payout:
+    post:
+      tags: [Contracts]
+      summary: 通过支付机构兑付人民币
+      operationId: payoutRedemption
+      parameters:
+        - {name: redemptionId, in: path, required: true, schema: {type: string, format: uuid}}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      responses:
+        '200': {$ref: '#/components/responses/RedemptionResponse'}
+  /redemptions/{redemptionId}/settle:
+    post:
+      tags: [Contracts]
+      summary: 兑付成功后结算/释放 MON
+      operationId: settleRedemption
+      parameters:
+        - {name: redemptionId, in: path, required: true, schema: {type: string, format: uuid}}
+        - {$ref: '#/components/parameters/IdempotencyKey'}
+      responses:
+        '200': {$ref: '#/components/responses/RedemptionResponse'}
+  /audit-events:
+    get:
+      tags: [Audit]
+      summary: 查询实体的链下审计和链上关联
+      operationId: listAuditEvents
+      parameters:
+        - {name: entityType, in: query, required: true, schema: {type: string}}
+        - {name: entityId, in: query, required: true, schema: {type: string, format: uuid}}
+      responses:
+        '200':
+          description: 审计事件
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: {type: array, items: {$ref: '#/components/schemas/AuditEvent'}}
+components:
+  securitySchemes:
+    bearerAuth: {type: http, scheme: bearer, bearerFormat: session-token}
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: {type: string, format: uuid}
+  schemas:
+    CreateDonationRequest:
+      type: object
+      required: [fiatAmount, currency, paymentProvider, policy]
+      properties:
+        fiatAmount: {type: integer, minimum: 1, description: CNY 最小单位}
+        currency: {type: string, enum: [CNY]}
+        paymentProvider: {type: string}
+        policy:
+          type: object
+          required: [allowedTaskTypes, allowedMaterialTypes]
+          properties:
+            allowedTaskTypes: {type: array, items: {type: string}}
+            allowedMaterialTypes: {type: array, items: {type: string}}
+            allowedRegions: {type: array, items: {type: string}}
+            expiresAt: {type: string, format: date-time}
+    CreateTaskRequest:
+      type: object
+      required: [disasterType, location, taskType, severity, requirements]
+      properties:
+        disasterType: {type: string}
+        location: {type: object, additionalProperties: true}
+        taskType: {type: string}
+        severity: {type: string, enum: [critical, high, normal, low]}
+        requirements: {type: object, additionalProperties: true}
+        evidenceIds: {type: array, items: {type: string, format: uuid}}
+    ApprovalRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason: {type: string, minLength: 1}
+        expiresAt: {type: string, format: date-time}
+    ResourceResponseRequest:
+      type: object
+      required: [resourceProfileId, quantity, unitPrice, etaHours, payload]
+      properties:
+        resourceProfileId: {type: string, format: uuid}
+        quantity: {type: integer, minimum: 1}
+        unitPrice: {type: integer, minimum: 1}
+        etaHours: {type: integer, minimum: 1}
+        payload: {type: object, additionalProperties: true}
+        evidenceIds: {type: array, items: {type: string, format: uuid}}
+    DeliveryRequest:
+      type: object
+      required: [plannedQuantity]
+      properties:
+        plannedQuantity: {type: integer, minimum: 1}
+        evidenceIds: {type: array, items: {type: string, format: uuid}}
+    ChainStatus:
+      type: object
+      required: [network, chainId, status, confirmations, requiredConfirmations]
+      properties:
+        network: {type: string, example: monad-testnet}
+        chainId: {type: integer, example: 10143}
+        txId: {type: string, nullable: true}
+        txHash: {type: string, nullable: true}
+        status: {type: string, enum: [QUEUED, BROADCAST, CONFIRMED, REVERTED, TIMEOUT, MANUAL_REVIEW]}
+        confirmations: {type: integer, minimum: 0}
+        requiredConfirmations: {type: integer, minimum: 1}
+        blockNumber: {type: integer, nullable: true}
+        lastError: {type: string, nullable: true}
+    DemoProcess:
+      type: object
+      properties:
+        network: {type: object, additionalProperties: true}
+        steps:
+          type: array
+          items:
+            type: object
+            properties:
+              key: {type: string}
+              title: {type: string}
+              status: {type: string, enum: [WAITING, ACTIVE, DONE]}
+              metrics: {type: object, additionalProperties: true}
+        moneyFlow:
+          type: object
+          properties:
+            depositedMon: {type: integer}
+            availableMon: {type: integer}
+            escrowedMon: {type: integer}
+            lockedMon: {type: integer}
+            settledMon: {type: integer}
+            pendingMon: {type: integer}
+        visualization:
+          type: object
+          properties:
+            nodes: {type: array, items: {type: object, additionalProperties: true}}
+            edges: {type: array, items: {type: object, additionalProperties: true}}
+            timeline: {type: array, items: {type: object, additionalProperties: true}}
+    EntityDetail:
+      type: object
+      properties:
+        item: {type: object, additionalProperties: true}
+        network: {type: object, additionalProperties: true}
+        chain: {type: array, items: {$ref: '#/components/schemas/ChainStatus'}}
+        traces: {type: array, items: {type: object, additionalProperties: true}}
+        auditEvents: {type: array, items: {$ref: '#/components/schemas/AuditEvent'}}
+        certificate:
+          type: object
+          nullable: true
+          additionalProperties: true
+        watermark:
+          type: array
+          items: {type: object, additionalProperties: true}
+        related: {type: object, additionalProperties: true}
+    Donation: {type: object, properties: {id: {type: string, format: uuid}, status: {type: string}, fiatAmount: {type: integer}, monAmount: {type: integer}, monPriceSnapshot: {type: object}, watermarkId: {type: string}, chain: {$ref: '#/components/schemas/ChainStatus'}}}
+    Task: {type: object, properties: {id: {type: string, format: uuid}, status: {type: string}, verificationStatus: {type: string}}}
+    ResourceResponse: {type: object, properties: {id: {type: string, format: uuid}, status: {type: string}, scoreSnapshot: {type: object}}}
+    Award: {type: object, properties: {id: {type: string, format: uuid}, status: {type: string}, reason: {type: string}}}
+    Delivery: {type: object, properties: {id: {type: string, format: uuid}, status: {type: string}, acceptedQuantity: {type: integer}}}
+    Settlement: {type: object, properties: {id: {type: string, format: uuid}, status: {type: string}, payoutAmount: {type: integer}, chain: {$ref: '#/components/schemas/ChainStatus'}}}
+    Redemption: {type: object, properties: {id: {type: string, format: uuid}, status: {type: string}, monAmount: {type: integer}, fiatAmount: {type: integer}, priceSnapshot: {type: object}, exchangeRuleVersion: {type: integer}, chain: {$ref: '#/components/schemas/ChainStatus'}}}
+    AuditEvent: {type: object, properties: {id: {type: string, format: uuid}, entityType: {type: string}, entityId: {type: string, format: uuid}, action: {type: string}, payloadHash: {type: string}, chainTransactionId: {type: string, nullable: true}}}
+    Error: {type: object, required: [code, message, retryable], properties: {code: {type: string}, message: {type: string}, retryable: {type: boolean}, details: {type: object}}}
+  responses:
+    ErrorResponse:
+      description: 业务错误
+      content:
+        application/json:
+          schema: {type: object, properties: {requestId: {type: string}, data: {nullable: true}, error: {$ref: '#/components/schemas/Error'}}}
+    DonationResponse:
+      description: 捐赠结果
+      content:
+        application/json:
+          schema: {type: object, properties: {requestId: {type: string}, data: {$ref: '#/components/schemas/Donation'}}}
+    TaskResponse:
+      description: 任务结果
+      content:
+        application/json:
+          schema: {type: object, properties: {requestId: {type: string}, data: {$ref: '#/components/schemas/Task'}}}
+    ResourceResponse:
+      description: 资源响应结果
+      content:
+        application/json:
+          schema: {type: object, properties: {requestId: {type: string}, data: {$ref: '#/components/schemas/ResourceResponse'}}}
+    AwardResponse:
+      description: 中选结果
+      content:
+        application/json:
+          schema: {type: object, properties: {requestId: {type: string}, data: {$ref: '#/components/schemas/Award'}}}
+    DeliveryResponse:
+      description: 交付结果
+      content:
+        application/json:
+          schema: {type: object, properties: {requestId: {type: string}, data: {$ref: '#/components/schemas/Delivery'}}}
+    SettlementResponse:
+      description: 结算结果
+      content:
+        application/json:
+          schema: {type: object, properties: {requestId: {type: string}, data: {$ref: '#/components/schemas/Settlement'}}}
+    RedemptionResponse:
+      description: 人民币兑换结果
+      content:
+        application/json:
+          schema: {type: object, properties: {requestId: {type: string}, data: {$ref: '#/components/schemas/Redemption'}}}

@@ -1,0 +1,10 @@
+backend/node_modules/
+backend/data/
+.repair-backups/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.log
+.env
+.env.*
+!.env.example

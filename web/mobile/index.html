@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#176851">
+  <title>Relief MON | 救援协作</title>
+  <script>if (location.protocol === "file:") document.documentElement.classList.add("file-access");</script>
+  <style>.file-notice{display:none}.file-access .file-notice{display:block;padding:32px;font:18px/1.7 sans-serif}.file-access .app-shell,.file-access .bottom-nav,.file-access dialog,.file-access .toast{display:none!important}</style>
+  <link rel="stylesheet" href="/mobile/style.css">
+  <link rel="stylesheet" href="/mobile/wallet.css">
+  <link rel="stylesheet" href="/mobile/operators.css">
+  <link rel="stylesheet" href="/mobile/funding.css">
+  <script defer src="/shared/vendor/lucide.min.js"></script>
+  <script defer src="/shared/vendor/ethers.umd.min.js"></script>
+  <script defer src="/shared/api.js"></script>
+  <script defer src="/mobile/operators.js"></script>
+  <script defer src="/mobile/wallet.js"></script>
+  <script defer src="/mobile/funding.js"></script>
+  <script defer src="/mobile/app.js"></script>
+</head>
+<body>
+  <div class="file-notice"><h1>请通过后端服务访问</h1><p>本地文件无法连接救援数据服务。启动后端后打开 <a href="http://localhost:8787/mobile/">http://localhost:8787/mobile/</a>。</p></div>
+  <div class="app-shell">
+    <header class="topbar"><a class="brand" href="#home" aria-label="Relief MON 首页"><span class="brand-mark">R</span><span><strong>Relief MON</strong><small>救援协作平台</small></span></a><button class="secondary-button" id="loginOpenBtn" type="button"><i data-lucide="user-circle"></i><span>登录 / 注册</span></button></header>
+    <div class="demo-banner"><strong>MOCK CATALOGUE · 演练物资与任务</strong><span>商城价格、库存、新闻关联任务为演练数据；下方资金池单独展示 Monad 测试网链上资金。</span></div>
+    <div class="connection" id="connection" data-state="loading"><span class="connection-dot" aria-hidden="true"></span><span id="connectionText" role="status">正在连接后端，加载数据…</span><button id="retryBtn" class="icon-button" type="button" title="重新连接" aria-label="重新连接"><i data-lucide="refresh-cw"></i></button></div>
+    <main id="main">
+      <section class="view" id="view-home" aria-labelledby="homeTitle">
+        <div class="section-heading"><h1 id="homeTitle">救援概览</h1><span class="muted" id="updatedAt">等待后端数据</span></div>
+        <section class="pool-band" aria-label="Monad测试网资金池"><div class="section-heading"><span class="eyebrow">Monad测试网资金池 · 累计确认捐赠 MON</span><span class="badge" id="walletSyncStatus" role="status">待配置</span></div><strong class="pool-value" id="poolMonValue">0</strong><div class="pool-grid"><div><small>合约余额 MON</small><strong id="escrowMonValue">0</strong></div><div><small>未分配 MON</small><strong id="availableMonValue">0</strong></div><div><small>捐赠人数</small><strong id="participantValue">0</strong></div></div><div class="progress-label"><span id="poolProgressText">等待链上配置</span><span id="poolTargetText"></span></div><progress id="poolProgress" max="100" value="0" aria-label="已确认捐赠分配比例"></progress><p class="caption" id="poolGapText">仅统计链上确认资金，不包含演练余额。</p><p class="caption" id="walletContract"></p></section>
+        <section class="wallet-band" aria-labelledby="walletTitle"><div class="section-heading"><h2 id="walletTitle">MetaMask 钱包</h2><span class="badge" id="walletNetwork">未连接</span></div><p id="walletAddress" class="wallet-address">尚未连接钱包</p><div class="wallet-actions"><button id="walletConnect" class="primary-button" type="button"><i data-lucide="wallet"></i><span>连接 MetaMask</span></button><button id="walletBind" class="secondary-button" type="button" hidden><i data-lucide="signature"></i>签名绑定钱包</button><a class="secondary-button" href="#account">捐赠 MON <i data-lucide="arrow-right"></i></a></div><p id="walletNotice" class="form-result" role="status"></p><p id="walletInstall" class="notice" hidden>未检测到 MetaMask。<a href="https://metamask.io/download/" target="_blank" rel="noopener noreferrer">安装 MetaMask</a>。请用已安装扩展的Chrome/Edge打开本页。</p></section>
+        <section class="resource-band"><div class="section-heading"><h2>演练物资参考价</h2><a href="#market">物资商城 <i data-lucide="arrow-right"></i></a></div><div id="resourceList" class="resource-list"><p class="muted">正在读取商品参考价…</p></div><p class="caption">商城估价为演练数据，不代表测试网资金购买力或库存承诺。</p></section>
+        <section class="personal-band"><div><span class="muted">我的已确认捐赠</span><strong id="homeEscrow">0 MON</strong><small id="homeAccountNote">登录后查询个人记录</small></div><a class="secondary-button" href="#account">我的账户 <i data-lucide="arrow-right"></i></a></section>
+        <section class="section"><div class="section-heading"><h2>任务与人力缺口</h2><a href="#tasks">全部任务 <i data-lucide="arrow-right"></i></a></div><div id="homeTaskList" class="task-list"><p class="empty">正在加载救援任务…</p></div></section>
+        <section class="section"><div class="section-heading"><h2>近期灾情</h2><span class="muted">官方来源 · 演练关联任务</span></div><div id="articleList" class="article-list"><p class="empty">正在加载灾情文章…</p></div></section>
+      </section>
+      <section class="view" id="view-market" aria-labelledby="marketTitle" hidden>
+        <a class="back-link" href="#home"><i data-lucide="arrow-left"></i>返回首页</a><div class="section-heading"><h1 id="marketTitle">物资商城</h1><span id="marketCount" class="muted">加载中</span></div>
+        <label class="search-box"><i data-lucide="search" aria-hidden="true"></i><input id="marketSearch" type="search" placeholder="搜索物资、服务或供应商" aria-label="搜索物资、服务或供应商"><button class="icon-button" id="clearSearch" type="button" title="清空搜索" aria-label="清空搜索" hidden><i data-lucide="x"></i></button></label>
+        <div class="category-tabs" id="categoryTabs" role="tablist" aria-label="商品分类"></div><div id="marketList" class="market-grid" role="tabpanel" aria-label="商品列表"><p class="empty">正在加载后端商品…</p></div>
+      </section>
+      <section class="view" id="view-tasks" aria-labelledby="tasksTitle" hidden><div class="section-heading"><h1 id="tasksTitle">救援任务</h1><span id="taskCount" class="muted">加载中</span></div><div id="taskList" class="task-list"><p class="empty">正在加载任务…</p></div></section>
+      <section class="view" id="view-account" aria-labelledby="accountTitle" hidden>
+        <div class="section-heading"><h1 id="accountTitle">我的账户</h1><button class="text-button" id="logoutBtn" type="button" hidden>退出登录</button></div><div class="account-heading"><i data-lucide="user-circle"></i><div><h2 id="accountName">未登录</h2><p id="accountIdentity" class="muted">登录或注册以查询个人链上记录</p></div></div>
+        <p class="notice">注册保存真实账户资料；填写邮箱不等于完成邮箱验证或身份认证。钱包绑定需要单独签名授权。</p><p id="accountWallet" class="wallet-address"></p><div class="wallet-actions"><button class="secondary-button" id="accountAuth" type="button">登录 / 注册</button><a class="secondary-button" href="#home">连接 / 绑定钱包 <i data-lucide="arrow-right"></i></a></div>
+        <section id="operators-account" class="op-mobile-section" aria-label="我的岗位"></section>
+        <section id="emailVerification" class="email-band" aria-labelledby="emailTitle" hidden>
+          <h3 id="emailTitle">邮箱验证</h3><p id="emailModeNote" class="caption" role="status">正在读取邮箱服务配置…</p>
+          <form id="emailVerifyForm" class="stack-form" aria-describedby="emailModeNote"><fieldset id="emailFields" disabled>
+            <button id="emailRequest" class="secondary-button" type="button"><i data-lucide="mail" aria-hidden="true"></i>获取验证码</button>
+            <label for="emailCode">邮箱验证码</label><input id="emailCode" name="code" required maxlength="128" autocomplete="one-time-code" spellcheck="false">
+            <button id="emailVerify" class="primary-button" type="submit">验证测试邮箱</button>
+          </fieldset><p id="emailResult" class="form-result" role="status" aria-atomic="true"></p></form>
+        </section>
+        <div class="account-balances"><div><small>我的已确认捐赠</small><strong id="accountEscrow">0 MON</strong></div><div><small>已分配至任务</small><strong id="accountAllocated">0 MON</strong></div><div><small>待分配</small><strong id="accountAvailable">0 MON</strong></div><div><small>钱包原生 MON 余额</small><strong id="walletBalance">未连接</strong></div></div><div class="section-heading"><p id="accountStatus" class="muted" role="status">登录后从后端查询个人记录</p><button id="accountRetry" class="icon-button" type="button" title="刷新账户与订单" aria-label="刷新账户与订单"><i data-lucide="refresh-cw"></i></button></div>
+        <section class="section mf-root" id="funding-mobile" aria-label="我的捐赠与资金去向"></section>
+        <section class="section"><div class="section-heading"><h2>我的申领订单</h2><a href="#market">去商城 <i data-lucide="arrow-right"></i></a></div><p id="orderStatus" class="muted" role="status"></p><div id="orderList" class="order-list"><p class="empty">登录后查看自己的订单</p></div></section>
+        <section class="section"><div class="section-heading"><h2>捐赠原生 MON</h2><span class="badge">Monad Testnet</span></div><p id="donationAvailability" class="notice" role="status">等待合约配置。未部署时不能发送捐赠。</p>
+          <form id="donateForm" class="stack-form"><fieldset id="donateFields" disabled><label>捐赠金额（MON）<input name="amountMon" type="text" required inputmode="decimal" maxlength="80" autocomplete="off" placeholder="0.01" pattern="[0-9]+(\.[0-9]{1,18})?"></label><label>用途限制<select name="purpose" id="donationPurpose"><option value="0">不限用途</option><option value="1">饮水食品</option><option value="2">医疗</option><option value="3">安置</option><option value="4">救援</option><option value="5">重建</option></select></label><button class="primary-button" id="donateSubmit" type="submit">预览捐赠分配</button></fieldset><p id="donateResult" role="status" class="form-result"></p></form>
+          <section id="donationPreview" class="donation-preview" hidden aria-labelledby="donationPreviewTitle"><h3 id="donationPreviewTitle">确认捐赠</h3><dl id="donationSummary" class="wallet-summary"></dl><h3>预估用途分配</h3><div id="donationAllocations"></div><p class="caption">分配以链上确认后的记录为准。另需支付网络手续费。</p><div class="wallet-actions"><button class="primary-button" id="donationSend" type="button"><i data-lucide="send"></i>确认并在 MetaMask 发送</button><button class="text-button" id="donationCancel" type="button">取消</button></div></section>
+          <div id="pendingSubmissions" class="order-list" aria-live="polite"></div>
+        </section><section class="section" id="prototype-donation-history"><h2>我的捐赠与任务去向</h2><div id="donationList" class="order-list"><p class="empty">登录后查询</p></div></section>
+      </section>
+    </main><footer>Relief MON · 救援协作演示</footer>
+  </div>
+  <nav class="bottom-nav" aria-label="主导航"><a href="#home" data-route="home"><i data-lucide="home"></i><span>首页</span></a><a href="#market" data-route="market"><i data-lucide="shopping-bag"></i><span>商城</span></a><a href="#tasks" data-route="tasks"><i data-lucide="list-checks"></i><span>任务</span></a><a href="#account" data-route="account"><i data-lucide="user-circle"></i><span>我的</span></a></nav>
+  <dialog id="loginDialog" aria-labelledby="loginTitle"><div class="dialog-heading"><h2 id="loginTitle">账户登录</h2><button class="icon-button" data-close type="button" title="关闭" aria-label="关闭"><i data-lucide="x"></i></button></div><div class="auth-tabs" role="tablist" aria-label="账户方式"><button id="authLoginTab" type="button" role="tab" aria-controls="authPanel" aria-selected="true">登录</button><button id="authRegisterTab" type="button" role="tab" aria-controls="authPanel" aria-selected="false" tabindex="-1">注册</button></div><div id="authPanel" role="tabpanel" aria-labelledby="authLoginTab"><form id="authForm" class="stack-form"><fieldset id="authFields"><label data-register-only hidden>姓名<input name="name" maxlength="60" autocomplete="name" disabled></label><label>邮箱<input name="email" type="email" required maxlength="150" autocomplete="email"></label><label>密码<input name="password" type="password" required minlength="10" maxlength="128" autocomplete="current-password"></label><label data-register-only hidden>组织（可选）<input name="organization" maxlength="150" autocomplete="organization" disabled></label><button class="primary-button" id="authSubmit" type="submit">登录</button></fieldset><p id="authResult" class="form-result" role="status"></p></form><button id="forgotPassword" class="text-button" type="button">忘记密码？</button></div>
+    <form id="passwordResetForm" class="stack-form" aria-describedby="passwordModeNote" hidden>
+      <p id="passwordModeNote" class="caption" role="status">正在读取邮箱服务配置…</p>
+      <fieldset id="passwordFields" disabled>
+        <label for="resetEmail">邮箱</label><input id="resetEmail" name="email" type="email" required maxlength="150" autocomplete="email">
+        <button id="passwordRequest" class="secondary-button" type="button"><i data-lucide="mail" aria-hidden="true"></i>获取重置验证码</button>
+        <label for="resetCode">重置验证码</label><input id="resetCode" name="code" required maxlength="128" autocomplete="one-time-code" spellcheck="false">
+        <label for="resetPassword">新密码（10–128 个字符）</label><input id="resetPassword" name="password" type="password" required minlength="10" maxlength="128" autocomplete="new-password">
+        <button id="passwordReset" class="primary-button" type="submit">重置密码</button>
+      </fieldset><p id="passwordResult" class="form-result" role="status" aria-atomic="true"></p>
+      <button id="passwordBack" class="text-button" type="button"><i data-lucide="arrow-left" aria-hidden="true"></i>返回登录</button>
+    </form><p class="caption">注册资料不代表邮箱已验证。连接钱包、签名绑定与捐赠分别授权。</p></dialog>
+  <dialog id="detailDialog" aria-labelledby="detailTitle"><div class="dialog-heading"><h2 id="detailTitle">详情</h2><button class="icon-button" data-close type="button" title="关闭" aria-label="关闭"><i data-lucide="x"></i></button></div><div id="detailContent"></div></dialog>
+  <div id="toast" class="toast" role="status"></div><noscript><p>请启用 JavaScript 以加载后端数据和提交登记。</p></noscript>
+</body>
+</html>

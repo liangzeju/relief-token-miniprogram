@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Relief MON | 运营管理台</title>
+  <script>if(location.protocol === "file:") document.documentElement.classList.add("file-access");</script>
+  <style>.file-notice{display:none}.file-access .file-notice{display:block;padding:32px;font:18px/1.7 sans-serif}.file-access .admin-shell{display:none}</style>
+  <link rel="stylesheet" href="/admin/style.css">
+  <link rel="stylesheet" href="/admin/wallet.css">
+  <link rel="stylesheet" href="/admin/operators.css">
+  <link rel="stylesheet" href="/admin/funding.css">
+</head>
+<body>
+  <div class="file-notice"><h1>请通过后端服务打开管理端</h1><p>运行项目中的 start.ps1 后访问 <a href="http://localhost:8787/admin/">管理端</a> 或 <a href="http://localhost:8787/mobile/">前台首页</a>。服务端口以启动窗口显示的地址为准。</p></div>
+  <div class="admin-shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="brand-mark">R</span><div><strong>Relief MON</strong><small>运营管理台</small></div></div>
+      <div class="workspace"><span class="avatar">平</span><div><strong>平台运营中心</strong><small>Monad Testnet</small></div><span class="chev">⌄</span></div>
+      <nav>
+        <a class="active" href="#wallet-admin"><span>▦</span>链上资金池</a>
+        <a href="#wallet-donations"><span>◈</span>用户捐赠明细</a>
+        <a href="#operators-admin"><span>▣</span>岗位管理</a>
+        <a href="#demo-flow"><span>⇄</span>演示流程</a>
+        <a href="#funds"><span>◈</span>资金与水印</a>
+        <a href="#tasks"><span>◎</span>灾情任务</a>
+        <a href="#algorithm"><span>⌬</span>算法调度</a>
+        <a href="#market"><span>□</span>商城费用</a>
+        <a href="#market-orders"><span>□</span>物资申领审核</a>
+        <a href="#contracts"><span>▣</span>合同履约</a>
+        <a href="#permissions"><span>◷</span>权限控制</a>
+        <a href="#audit"><span>⌁</span>链上审计</a>
+      </nav>
+      <div class="sidebar-foot"><a href="/mobile/">↗ 打开前台首页</a><a href="/mobile/#market">打开物资商城</a><span>Monad Testnet · 10143</span></div>
+    </aside>
+    <main class="content">
+      <header class="content-head">
+        <div><span class="kicker">MONAD OPERATIONS / 2026.09.04</span><h1>运营总览</h1></div>
+        <div class="head-actions"><span class="status" id="connectionStatus" role="status">正在连接后端</span><button class="outline" id="refreshBtn">刷新数据</button><button class="outline" id="resetBtn">重置演示</button><button class="user-button">平台管理员 <span>⌄</span></button></div>
+      </header>
+      <section id="wallet-admin" class="wallet-admin" aria-label="Monad 测试网资金池"></section>
+      <section id="wallet-donations" class="fr-root" data-testid="fr-root" aria-label="用户捐赠明细"></section>
+      <section id="operators-admin" class="op-admin-section" aria-label="岗位管理"></section>
+      <div class="demo-banner"><strong>以下为业务演示账本</strong><span>与上方真实 Monad 测试网资金池独立，不计入链上余额</span></div>
+
+      <section id="overview" class="stats-grid">
+        <div class="stat-card"><span>演示资金池 MON</span><strong id="deposited">0</strong><small>DemoChainAdapter 模拟入账</small></div>
+        <div class="stat-card"><span>演示可调度 MON</span><strong id="available">0</strong><small>不代表链上余额</small></div>
+        <div class="stat-card"><span>演示参与人数</span><strong id="participants">0</strong><small id="participantDelta">业务演示数据</small></div>
+        <div class="stat-card dark"><span>演示事件</span><strong id="events">0</strong><small>模拟水印记录</small></div>
+      </section>
+
+      <section class="panel process-panel">
+        <div class="panel-head"><div><span class="kicker">VISIBLE BACKEND PROCESS</span><h2>后端过程可视化</h2><p class="panel-note">把接口、权限、交易、索引和水印状态拆成可观察指标。</p></div></div>
+        <div id="processVisuals" class="process-grid"></div>
+      </section>
+
+      <section class="panel flow-panel" id="demo-flow">
+        <div class="panel-head"><div><span class="kicker">DEMO FLOW CONTROL</span><h2>闭环演示控制台</h2><p class="panel-note">支付回调由后端验签入库；管理端只推进 KYC/合规、Monad 入账、链上确认、合同和验收。</p></div><div class="flow-summary"><strong id="flowProgress">0 / 0</strong><span>步骤已完成</span></div></div>
+        <div class="flow-toolbar"><button class="primary-button" id="runNextBtn">执行下一步</button><button class="outline" id="refreshFlowBtn">刷新流程</button><span class="flow-status" id="flowStatus" role="status"></span></div>
+        <div id="flowSteps" class="flow-steps" aria-live="polite"></div>
+      </section>
+
+      <section class="grid-two">
+        <div class="panel" id="funds">
+          <div class="panel-head"><div><span class="kicker">FUNDING & WATERMARK</span><h2>资金水印</h2></div><button class="small-button" id="receiptBtn">生成项目证书</button></div>
+          <div class="watermark-map" id="watermarkGraph"></div>
+          <div class="table-wrap"><table><thead><tr><th>捐赠单</th><th>捐赠方</th><th>MON</th><th>状态</th><th>水印</th><th>操作</th></tr></thead><tbody id="donationRows"></tbody></table></div>
+        </div>
+        <div class="panel" id="audit"><div class="panel-head"><div><span class="kicker">ON-CHAIN ACTIVITY</span><h2>链上动态</h2></div><button class="small-button" data-detail="audit">全部记录</button></div><div class="audit-list" id="auditList"></div></div>
+      </section>
+
+      <section class="grid-two lower">
+        <div class="panel" id="tasks"><div class="panel-head"><div><span class="kicker">RELIEF TASKS</span><h2>任务队列</h2></div><button class="small-button" data-detail="task-new">新建任务</button></div><div id="taskRows" class="task-rows"></div></div>
+        <div class="panel" id="contracts"><div class="panel-head"><div><span class="kicker">CONTRACT CONTROL</span><h2>合同履约</h2></div><button class="small-button" data-detail="contracts">合同台账</button></div><div id="contractRows" class="contract-list"></div></div>
+      </section>
+
+      <section class="panel" id="market-orders">
+        <div class="panel-head"><div><span class="kicker">MATERIAL REQUESTS</span><h2>商城物资申领</h2></div><span id="orderCount">0 笔待审核</span></div>
+        <div class="table-wrap"><table><thead><tr><th>申请单 / 时间</th><th>物资或服务</th><th>救援任务</th><th>数量</th><th>合计 MON</th><th>状态 / 合同</th><th>处理</th></tr></thead><tbody id="marketOrderRows"></tbody></table></div>
+      </section>
+      <section class="grid-two lower">
+        <div class="panel" id="algorithm"><div class="panel-head"><div><span class="kicker">TASK QUEUE ALGORITHM</span><h2>任务队列算法</h2></div><button class="small-button" data-detail="algorithm">算法详情</button></div><div id="algorithmPanel" class="algorithm-list"></div></div>
+        <div class="panel" id="market"><div class="panel-head"><div><span class="kicker">RELIEF MARKETPLACE</span><h2>物资与服务商城</h2></div><button class="small-button" data-detail="market">费用目录</button></div><div id="marketRows" class="market-grid"></div></div>
+      </section>
+
+      <section class="grid-two lower">
+        <div class="panel" id="permissions"><div class="panel-head"><div><span class="kicker">ROLE BASED ACCESS</span><h2>权限控制</h2></div><button class="small-button" data-detail="permissions">查看矩阵</button></div><div id="permissionPanel" class="permission-grid"></div></div>
+        <div class="panel bids" id="bids"><div class="panel-head"><div><span class="kicker">PRIVATE BIDDING / PUBLIC DISCLOSURE</span><h2>竞价评审</h2></div><div class="segmented"><button class="selected">待评审 3</button><button>已公示 6</button><button>已归档 18</button></div></div><div class="bid-grid"><article><div class="bid-title"><span class="tag amber">待复核</span><strong>饮用水 · TASK-001</strong></div><p>3 家认证供应商已提交封标报价，截止后生成 Merkle root。</p><div class="bid-meta"><span>候选摘要未公示</span><button class="small-button" data-detail="bid-TASK-001">进入评审</button></div></article><article><div class="bid-title"><span class="tag green">已公示前 3</span><strong>医疗物资 · TASK-002</strong></div><p>公开 Monad 已锚定脱敏评分和报价摘要。</p><div class="bid-meta"><span>root: 0x91...b83d</span><button class="small-button" data-detail="bid-TASK-002">查看锚定</button></div></article></div></div>
+      </section>
+    </main>
+  </div>
+  <aside class="detail-drawer" id="detailDrawer" hidden>
+    <button class="drawer-close" id="drawerClose" aria-label="关闭">×</button>
+    <div id="drawerBody"></div>
+  </aside>
+  <div class="toast" id="toast"></div>
+  <script src="/shared/api.js"></script>
+  <script src="/admin/app.js"></script>
+  <script src="/admin/operators.js"></script>
+  <script src="/admin/funding.js"></script>
+  <script src="/admin/wallet.js"></script>
+</body>
+</html>

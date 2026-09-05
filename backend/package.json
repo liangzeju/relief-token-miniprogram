@@ -1,0 +1,42 @@
+{
+  "name": "relief-mon-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Monad MON watermark backend for the relief exchange platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "check": "node --check server.js",
+    "test": "node test/smoke.js && node test/integration.js && node --test test/access-boundaries.cjs test/wallet-recovery.cjs test/admin-sessions.cjs test/wallet-email.cjs test/wallet-accounts.cjs test/state-store.cjs test/server-persistence.cjs test/procurement-domain.cjs test/operator-registry.cjs test/procurement-store.cjs test/platform-service.cjs test/funding-domain.cjs test/funding-store.cjs test/funding-review.cjs test/funding-receipts.cjs test/funding-indexer.cjs test/funding-indexer-runtime.cjs test/funding-indexer-server.cjs test/donation-intent-store.cjs test/donation-intent-service.cjs test/funding-chain-integration.cjs test/procurement-attestations.cjs test/fulfillment-http.cjs test/procurement-evidence.cjs test/evidence-http.cjs test/json-body.cjs test/procurement-review.cjs test/review-http.cjs test/funding-read-http.cjs",
+    "test:repair": "node --test test/access-boundaries.cjs test/wallet-recovery.cjs test/admin-sessions.cjs test/wallet-email.cjs test/wallet-accounts.cjs test/state-store.cjs test/server-persistence.cjs test/procurement-domain.cjs test/operator-registry.cjs test/procurement-store.cjs test/platform-service.cjs test/funding-domain.cjs test/funding-store.cjs test/funding-review.cjs test/procurement-attestations.cjs test/fulfillment-http.cjs test/procurement-evidence.cjs test/evidence-http.cjs test/json-body.cjs test/procurement-review.cjs test/review-http.cjs",
+    "test:operations": "node --test test/operator-registry.cjs test/procurement-store.cjs test/platform-service.cjs && node test/operations-browser.cjs",
+    "test:funding": "node --test test/funding-domain.cjs test/funding-store.cjs test/funding-review.cjs test/funding-receipts.cjs test/funding-indexer.cjs test/funding-indexer-runtime.cjs test/donation-intent-store.cjs test/donation-intent-service.cjs",
+    "test:funding-indexer": "node --test test/funding-indexer.cjs test/funding-indexer-runtime.cjs test/funding-indexer-server.cjs",
+    "test:intents": "node --test test/donation-intent-store.cjs test/donation-intent-service.cjs test/funding-receipts.cjs",
+    "test:funding-read": "node --test test/funding-read-http.cjs && node test/funding-read-browser.cjs",
+    "test:funding-mobile": "node --test test/funding-read-http.cjs && node test/funding-mobile-browser.cjs",
+    "test:funding-chain": "node --test test/donation-ledger.cjs test/funding-chain-integration.cjs test/funding-receipts.cjs",
+    "test:fulfillment": "node --test test/procurement-attestations.cjs test/fulfillment-http.cjs test/procurement-evidence.cjs test/evidence-http.cjs test/json-body.cjs && node test/fulfillment-browser.cjs",
+    "test:review": "node --test test/procurement-review.cjs test/review-http.cjs && node test/review-browser.cjs",
+    "test:catalog": "node test/catalog-browser.cjs",
+    "test:auth-browser": "node test/auth-linkage-browser.cjs && node test/wallet-email-ui.cjs",
+    "test:browser": "node test/auth-linkage-browser.cjs && node test/mobile-deep-links.cjs && node test/wallet-email-ui.cjs && node test/operations-browser.cjs && node test/fulfillment-browser.cjs && node test/review-browser.cjs && node test/catalog-browser.cjs && node test/legacy-browser-runner.cjs",
+    "compile:contract": "node scripts/compile-contract.cjs",
+    "test:wallet": "node --test test/wallet-accounts.cjs && node test/contract.cjs && node test/wallet-integration.cjs && node test/wallet-indexer.cjs",
+    "test:wallet-browser": "node test/wallet-browser.cjs"
+  },
+  "devDependencies": {
+    "ganache": "7.9.2",
+    "playwright": "1.62.1",
+    "solc": "0.8.30"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.6.1",
+    "ethers": "6.17.0",
+    "tslib": "2.7.0"
+  }
+}
