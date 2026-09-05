@@ -4,7 +4,7 @@ services:
     runtime: node
     plan: free
     rootDir: .
-    buildCommand: corepack enable && pnpm --dir backend install --prod --frozen-lockfile --ignore-scripts
+    buildCommand: npm install --prefix backend --omit=dev --ignore-scripts
     startCommand: node backend/server.js
     healthCheckPath: /v1/health
     autoDeployTrigger: commit
