@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: relief-monad-mvp
+    runtime: node
+    plan: starter
+    rootDir: .
+    buildCommand: corepack enable && pnpm --dir backend install --prod --frozen-lockfile --ignore-scripts
+    startCommand: node backend/server.js
+    healthCheckPath: /v1/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_ENV
+        value: staging
+      - key: RELIEF_ENABLE_LEGACY_DEMO
+        value: "false"
+      - key: RELIEF_ENABLE_WALLET_PROTOTYPE
+        value: "true"
+      - key: MONAD_RPC_URL
+        value: https://testnet-rpc.monad.xyz
+      - key: MONAD_WALLET_RPC_URL
+        value: https://testnet-rpc.monad.xyz
+      - key: MONAD_CONFIRMATIONS
+        value: "2"
+      - key: RELIEF_ADMIN_TOKEN
+        generateValue: true
+      - key: DATA_DIR
+        value: /var/data/relief-mon
+    disk:
+      name: relief-mon-data
+      mountPath: /var/data
+      sizeGB: 1

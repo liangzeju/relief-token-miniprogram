@@ -22,8 +22,9 @@ const ROOT = path.resolve(__dirname, "..");
 const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : path.join(__dirname, "data");
 const DATA_FILE = path.join(DATA_DIR, "state.json");
 const NETWORK = { name: "monad-testnet", chainId: 10143 };
-const CORS_ORIGIN = process.env.CORS_ORIGIN || `http://localhost:${PORT}`;
-const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
+const DEPLOYMENT_URL = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || DEPLOYMENT_URL;
+const CORS_ORIGIN = process.env.CORS_ORIGIN || new URL(PUBLIC_BASE_URL).origin;
 // Do not expose a fake contract address when the testnet pool has not been deployed.
 // MONAD_POOL_ADDRESS is the verified wallet-service configuration; use it for the
 // public projection when a separate display override is not supplied.

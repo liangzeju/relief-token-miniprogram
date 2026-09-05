@@ -71,6 +71,8 @@ CORS_ORIGIN=https://<public-host>
 
 环境变量由进程传入，不自动读取 `.env`。PowerShell 示例：`$env:PUBLIC_BASE_URL = 'http://localhost:8787'`。
 
+仓库根目录提供 `render.yaml`。通过 Render Blueprint 创建服务时，平台会自动生成管理员令牌、挂载持久磁盘，并使用 Render 提供的 `RENDER_EXTERNAL_URL` 作为未显式配置时的公开站点地址和同源校验地址。管理员令牌只在 Render 密钥配置和管理端登录框中使用，不提交到 GitHub。
+
 ## 验证
 
 在 `backend` 执行 `pnpm install --ignore-scripts` 安装开发依赖，然后执行：
